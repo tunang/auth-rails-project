@@ -39,13 +39,18 @@ Rails
 
         scope :admin do
           resources :authors
+
           resources :categories
+
           resources :books
           post 'books/:id/restore', to: 'books#restore'
+
           get 'orders/get_all', to: 'orders#get_all'
         end
 
         scope :user do
+          get '/books/search', to: 'books#search'
+
           # /user/addresses route
           resources :addresses
 

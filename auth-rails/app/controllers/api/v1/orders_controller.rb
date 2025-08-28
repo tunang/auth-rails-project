@@ -145,8 +145,8 @@ class Api::V1::OrdersController < ApplicationController
           line_items: line_items,
           mode: 'payment',
           success_url:
-            "#{ENV['NGROK_FRONTEND_URL']}/checkout/success?session_id={CHECKOUT_SESSION_ID}",
-          cancel_url: "#{ENV['NGROK_FRONTEND_URL']}/checkout/cancel",
+            "#{ENV['FRONTEND_URL']}/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+          cancel_url: "#{ENV['FRONTEND_URL']}/checkout/cancel",
         )
 
       order.update!(stripe_session_id: session.id)
@@ -188,14 +188,14 @@ class Api::V1::OrdersController < ApplicationController
   def update
     authorize @order
     if @order.update(order_params)
-      OrdersChannel.broadcast_to(
-        current_user,
-        { type: 'ORDER_UPDATED', payload: OrderSerializer.new(@order).as_json },
-      )
+      # OrdersChannel.broadcast_to(
+      #   current_user,
+      #   { type: 'ORDER_UPDATED', payload: OrderSerializer.new(@order).as_json },
+      # )
       render json: {
                status: {
                  code: 201,
-                 message: 'Order created successfully',
+                 message: 'Order status updated successfully',
                },
                data: OrderSerializer.new(@order).as_json,
              },
@@ -232,7 +232,6 @@ class Api::V1::OrdersController < ApplicationController
 
   def order_params
     params
-      .require(:order)
       .permit(:shipping_address_id, :payment_method, :note, :status)
   end
 end

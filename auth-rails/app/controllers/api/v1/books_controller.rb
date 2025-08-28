@@ -33,6 +33,42 @@ class Api::V1::BooksController < ApplicationController
            status: :ok
   end
 
+  def search
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 5).to_i
+
+    # search_result = Book.search(params[:q], page: page, per_page: per_page)
+    search_result = Book.search(params[:search])
+
+    books =
+      search_result
+        .records
+        .includes(
+          :authors,
+          :categories,
+          cover_image_attachment: :blob,
+          sample_pages_attachments: :blob,
+        )
+        .page(params[:page] || 1)
+        .per(params[:per_page] || 5)
+
+    render json: {
+             status: {
+               code: 200,
+               message: 'Books search successfully',
+             },
+             data: books.map { |book| BookSerializer.new(book).as_json },
+             meta: {
+               current_page: books.current_page,
+               next_page: books.next_page,
+               prev_page: books.prev_page,
+               total_pages: books.total_pages,
+               total_count: books.total_count,
+             },
+           },
+           status: :ok
+  end
+
   def show
     authorize @book
     render json: {
