@@ -1,0 +1,51 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-auth-rails-project
+    restart: always
+    environment:
+      POSTGRES_USER: tuan2004 
+      POSTGRES_PASSWORD: tuan2004 
+      POSTGRES_DB: postgres-auth-rails-project
+    ports:
+      - "54432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis-auth-rails-project
+    restart: always 
+    ports:
+    - "56379:6379"
+    volumes:
+    - "redis_data:/data"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
+    container_name: es-auth-rails-project
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=tuan2004   # mật khẩu cho user "elastic"
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false  # bật TLS nếu muốn (ở đây tắt cho dễ test)
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-u", "elastic:changeme", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:
+  es_data:

@@ -1,0 +1,13 @@
+<p>Hello <%= @resource.email %>,</p>
+
+<p>Thank you for signing up! Please confirm your email by clicking below:</p>
+
+<p>
+  <a href="<%= "#{ENV.fetch('FRONTEND_URL', 'https://localhost:5173')}/confirm?token=#{@token}" %>">
+    Confirm my account
+  </a>
+</p>
+
+
+<p>If the button doesn’t work, copy this URL into your browser:</p>
+<p><%= "#{ENV.fetch('FRONTEND_URL', 'https://localhost:5173')}/confirm?token=#{@token}" %></p>
