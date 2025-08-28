@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_28_072858) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_28_083355) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -116,7 +116,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_072858) do
   create_table "cart_items", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "book_id", null: false
-    t.integer "quantity", default: 1, null: false
+    t.integer "quantity", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["book_id"], name: "index_cart_items_on_book_id"
@@ -178,6 +178,42 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_072858) do
     t.index ["uid"], name: "index_oauth_applications_on_uid", unique: true
   end
 
+  create_table "order_items", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "book_id", null: false
+    t.integer "quantity", null: false
+    t.decimal "unit_price", precision: 10, scale: 2, null: false
+    t.decimal "total_price", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_order_items_on_book_id"
+    t.index ["order_id"], name: "index_order_items_on_order_id"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "order_number", null: false
+    t.integer "status", default: 0, null: false
+    t.decimal "subtotal", precision: 10, scale: 2, null: false
+    t.decimal "tax_amount", precision: 10, scale: 2, default: "0.0"
+    t.decimal "shipping_cost", precision: 10, scale: 2, default: "0.0"
+    t.decimal "total_amount", precision: 10, scale: 2, null: false
+    t.bigint "shipping_address_id", null: false
+    t.string "payment_method"
+    t.string "payment_status"
+    t.string "tracking_number"
+    t.text "notes"
+    t.string "payment_link"
+    t.string "stripe_session_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_number"], name: "index_orders_on_order_number", unique: true
+    t.index ["shipping_address_id"], name: "index_orders_on_shipping_address_id"
+    t.index ["stripe_session_id"], name: "index_orders_on_stripe_session_id", unique: true
+    t.index ["user_id", "status"], name: "index_orders_on_user_id_and_status"
+    t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -206,4 +242,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_072858) do
   add_foreign_key "categories", "categories", column: "parent_id"
   add_foreign_key "oauth_access_grants", "oauth_applications", column: "application_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
+  add_foreign_key "order_items", "books"
+  add_foreign_key "order_items", "orders"
+  add_foreign_key "orders", "users"
 end

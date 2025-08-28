@@ -22,41 +22,42 @@ Rails
     #   post '/login', to: 'auth#login'
     # end
 
-
-
     namespace :api do
       namespace :v1 do
-
-        
         post 'login', to: 'sessions#create'
         post 'refresh', to: 'sessions#refresh'
         post 'register', to: 'registrations#create'
-        
+
         devise_for :users,
-        path: '',
-        controllers: {
+                   path: '',
+                   controllers: {
                      confirmations: 'api/v1/confirmations',
                    }
-                   
+
         post 'forgot', to: 'passwords#forgot'
         post 'reset', to: 'passwords#reset'
-        
 
         scope :admin do
           resources :authors
           resources :categories
           resources :books
           post 'books/:id/restore', to: 'books#restore'
-
+          get 'orders/get_all', to: 'orders#get_all'
         end
 
         scope :user do
-          resources :addresses  
-        end
+          # /user/addresses route
+          resources :addresses
 
-        
-        
-        
+          resources :orders
+
+          # /user/cart route
+          get '/cart', to: 'carts#show'
+          post '/cart/add', to: 'carts#add_item'
+          patch '/cart/update', to: 'carts#update_item'
+          delete '/cart/remove/:id', to: 'carts#remove_item'
+          delete '/cart/clear', to: 'carts#clear'
+        end
       end
     end
   end
