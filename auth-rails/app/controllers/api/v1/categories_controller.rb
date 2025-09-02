@@ -39,6 +39,20 @@ class Api::V1::CategoriesController < ApplicationController
            status: :ok
   end
 
+
+  def get_nested_category
+    authorize :category, :get_nested_category?
+
+    categories = Category.all()
+    render json: {
+             status: {
+               code: 200,
+               message: 'Fetched categories successfully',
+             },
+             categories: CategoryTreeSerializer.new(categories).as_json,
+           }, status: :ok
+  end
+
   def create
     category = Category.new(category_params)
     authorize Category

@@ -1,5 +1,5 @@
 class Api::V1::OrdersController < ApplicationController
-  before_action :doorkeeper_authorize!, except: %i[index show ] # ✅ Kiểm tra token trước mọi action
+  before_action :doorkeeper_authorize!, except: %i[index show] # ✅ Kiểm tra token trước mọi action
   before_action :set_order, only: %i[show update destroy]
   before_action :authorize_order, only: %i[show update destroy]
 
@@ -161,8 +161,10 @@ class Api::V1::OrdersController < ApplicationController
       # )
 
       # All admin
-      ActionCable.server.broadcast("admin_orders", { type: "ORDER_UPDATED", payload: OrderSerializer.new(order).as_json })
-
+      ActionCable.server.broadcast(
+        'admin_orders',
+        { type: 'ORDER_UPDATED', payload: OrderSerializer.new(order).as_json },
+      )
 
       render json: {
                status: {
@@ -231,7 +233,6 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def order_params
-    params
-      .permit(:shipping_address_id, :payment_method, :note, :status)
+    params.permit(:shipping_address_id, :payment_method, :note, :status)
   end
 end

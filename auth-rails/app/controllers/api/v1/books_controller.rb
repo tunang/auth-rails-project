@@ -33,6 +33,11 @@ class Api::V1::BooksController < ApplicationController
            status: :ok
   end
 
+
+  def featured
+  
+  end
+
   def search
     page = (params[:page] || 1).to_i
     per_page = (params[:per_page] || 5).to_i

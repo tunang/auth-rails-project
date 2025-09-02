@@ -40,6 +40,11 @@ class Api::V1::AuthorsController < ApplicationController
            status: :ok
   end
 
+
+  def featured 
+    books = Book.find
+  end
+
   def create
     author = Author.new(author_params.except(:image))
     authorize author

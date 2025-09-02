@@ -49,6 +49,11 @@ Rails
         end
 
         scope :user do
+          # /user/categories
+          get '/categories/get_nested_category',
+              to: 'categories#get_nested_category'
+
+          # /user/books
           get '/books/search', to: 'books#search'
 
           # /user/addresses route

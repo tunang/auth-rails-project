@@ -2,11 +2,12 @@ class CategoryPolicy < ApplicationPolicy
   def index?
     user.role == "admin"
   end
-
+  def get_nested_category?
+    true
+  end
   def show?
     user.role == "admin"
   end
-
   def create?
     user.role == "admin"
   end
