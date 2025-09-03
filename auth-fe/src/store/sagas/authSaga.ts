@@ -137,23 +137,16 @@ function* logoutSaga(): SagaIterator {
 function* forgotPasswordSaga(
   action: PayloadAction<ForgotPasswordRequest>
 ): SagaIterator {
-  const toastId = toast.loading("Đang gửi email đặt lại mật khẩu...");
 
   try {
     const credentials = action.payload;
 
-    const response: ApiResponse<{ status: string; message: string }> =
+    const response: ApiResponse<null> =
       yield call(authApi.forgotPassword, credentials);
 
-    yield put(forgotPasswordSuccess({ message: response.data.message }));
+    yield put(forgotPasswordSuccess(response.status.message));
 
-    toast.success(
-      "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư.",
-      {
-        id: toastId,
-        duration: 5000,
-      }
-    );
+  
   } catch (error: any) {
     const errorMessage = parseErrorMessage(
       error,
@@ -161,7 +154,6 @@ function* forgotPasswordSaga(
     );
 
     yield put(forgotPasswordFailure(errorMessage));
-    toast.error(errorMessage, { id: toastId });
   }
 }
 

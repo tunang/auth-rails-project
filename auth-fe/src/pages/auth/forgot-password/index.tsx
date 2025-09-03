@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,7 @@ import { MailCheck } from "lucide-react";
 import { useAppSelector } from "@/hooks/useAppDispatch";
 import { forgotPasswordRequest } from "@/store/slices/authSlice";
 import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 
 const ForgotPassword = () => {
   const dispatch = useDispatch();
@@ -48,7 +49,19 @@ const ForgotPassword = () => {
     dispatch(forgotPasswordRequest(data));
   };
 
+  React.useEffect(() => {
+    if (message === "email_not_found") {
+      toast.error("Email không tồn tại trong hệ thống.", {
+        duration: 5000,
+      });
+    }
 
+    if (message === "reset_email_sent") {
+      toast.success("Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư.", {
+        duration: 5000,
+      });
+    }
+  }, [message]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
