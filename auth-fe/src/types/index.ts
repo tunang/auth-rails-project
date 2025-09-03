@@ -21,14 +21,12 @@ export type AuthResponse = {
 }
 
 export type ApiResponse<T> = {
-  data: T;
+  data: T | null;
   status: {
     code: number;
     message: string;
   };
-  errors?: {
-    [key: string]: string[];
-  };
+  errors?: string[];
   meta?: {
     current_page: number;
     next_page: number;
@@ -36,4 +34,12 @@ export type ApiResponse<T> = {
     total_pages: number;
     total_count: number;
   };
+};
+
+export type ErrorResponse = {
+  status: {
+    code: number;
+    message: string;
+  };
+  errors: string[];
 };

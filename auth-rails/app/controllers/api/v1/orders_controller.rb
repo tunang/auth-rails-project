@@ -70,10 +70,25 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def create
+    cart_items = current_user.cart_items.includes(:book)
+    if cart_items.empty?
+      return(
+        render json: {
+                 status: 'error',
+                 data: nil,
+                 errors: [
+                   {
+                     code: 'RECORD_NOT_FOUND',
+                     title: 'Not Found',
+                     detail: 'Cart is empty',
+                   },
+                 ],
+               },
+               status: :not_found
+      )
+    end
+    
     ActiveRecord::Base.transaction do
-      cart_items = current_user.cart_items.includes(:book)
-      raise ActiveRecord::RecordNotFound, 'Cart is empty' if cart_items.empty?
-
       subtotal = cart_items.sum { |item| item.book.price * item.quantity }
       tax_amount = subtotal * 0.1
       shipping_cost = 5

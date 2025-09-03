@@ -50,7 +50,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     // Kiểm tra nếu error là 401 và liên quan đến access token hết hạn
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response.data.status.message === "unauthorized" && !originalRequest._retry) {
       console.log('Access token expired, starting refresh process...');
       
       if (isRefreshing) {

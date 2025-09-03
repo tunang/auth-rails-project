@@ -1,37 +1,60 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, Book } from "lucide-react";
+import { Link } from "react-router-dom"; // chỉ Link từ react-router-dom
+import { Eye, EyeOff, ArrowLeft, Book, Lock, User, Mail, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterRequest } from "@/schemas/auth.schema";
 import { useAppDispatch, useAppSelector } from "@/hooks/useAppDispatch";
-import { registerRequest, clearMessage } from "@/store/slices/authSlice";
+import { registerRequest, clearMessage, resendConfirmationFailure, resendConfirmationRequest } from "@/store/slices/authSlice";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import type { RootState } from "@/store";
 
 const RegisterPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isRegistering, message } = useAppSelector((state) => state.auth);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError,
-  } = useForm<RegisterRequest>({
+  const { message, isLoading } = useAppSelector((state: RootState) => state.auth);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isRegisted, setIsRegisted] = useState(false);
+
+  const form = useForm<RegisterRequest>({
+    mode: "onTouched",
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
+    },
   });
 
   const onSubmit = async (data: RegisterRequest) => {
-    // Clear any existing messages
-    dispatch(clearMessage());
-    
-    // Dispatch register request
-    dispatch(registerRequest(data));
+    if (isRegisted) {
+      dispatch(resendConfirmationRequest(data.email));
+    }
+
+    if(!isRegisted) {
+      dispatch(registerRequest(data));
+    }
   };
 
   // Clear message when component unmounts
@@ -41,20 +64,36 @@ const RegisterPage = () => {
     };
   }, [dispatch]);
 
-  // Set form errors from Redux message
+
   React.useEffect(() => {
-    if (message) {
-      // Handle specific validation errors
-      if (message.toLowerCase().includes("email") || message.includes("taken")) {
-        setError("email", { message });
-      } else if (message.toLowerCase().includes("name") || message.includes("tên")) {
-        setError("name", { message });
-      } else if (message.toLowerCase().includes("password") || message.includes("mật khẩu")) {
-        setError("password", { message });
-      }
-      // For general errors, don't set specific field errors
+    if (message === "user_created_successfully") {
+      toast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.", { 
+        duration: 5000 
+      });
+      setIsRegisted(true);
     }
-  }, [message, setError]);
+
+    if (message === "user_creation_failed") {
+      toast.error("Đăng ký thất bại! Email đã tồn tại. Vui lòng thử lại.", { 
+        duration: 5000 
+      });
+      setIsRegisted(false);
+    }
+
+    if (message === "confirmation_email_failed") {
+      toast.error("Email không hợp lệ. Vui lòng thử lại.", { 
+        duration: 5000 
+      });
+    }
+
+    if (message === "confirmation_email_sent") {
+      toast.success("Email đã được gửi lại. Vui lòng kiểm tra hộp thư.", { 
+        duration: 5000 
+      });
+    }
+  }, [message, navigate]);
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
@@ -72,19 +111,6 @@ const RegisterPage = () => {
 
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-4 pb-6">
-            {/* Logo */}
-            <div className="flex justify-center">
-              <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-orange-500 rounded-lg flex items-center justify-center">
-                  <Book className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">BookStore</h1>
-                  <p className="text-xs text-gray-500">Tri thức là sức mạnh</p>
-                </div>
-              </div>
-            </div>
-
             <div className="text-center">
               <CardTitle className="text-2xl font-bold text-gray-900">
                 Đăng ký tài khoản
@@ -95,125 +121,134 @@ const RegisterPage = () => {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* Name */}
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Họ và tên *
-                </label>
-                <Input
-                  {...register("name")}
-                  id="name"
-                  type="text"
-                  placeholder="Nhập họ và tên"
-                  className="h-12"
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-600">{errors.name.message}</p>
-                )}
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Email *
-                </label>
-                <Input
-                  {...register("email")}
-                  id="email"
-                  type="email"
-                  placeholder="Nhập email của bạn"
-                  className="h-12"
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email.message}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Mật khẩu *
-                </label>
-                <div className="relative">
-                  <Input
-                    {...register("password")}
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Tạo mật khẩu"
-                    className="h-12 pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-sm text-red-600">{errors.password.message}</p>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div className="space-y-2">
-                <label htmlFor="password_confirmation" className="text-sm font-medium text-gray-700">
-                  Xác nhận mật khẩu *
-                </label>
-                <div className="relative">
-                  <Input
-                    {...register("password_confirmation")}
-                    id="password_confirmation"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Nhập lại mật khẩu"
-                    className="h-12 pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-                {errors.password_confirmation && (
-                  <p className="text-sm text-red-600">{errors.password_confirmation.message}</p>
-                )}
-              </div>
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-medium"
-                disabled={isRegistering}
+          <CardContent className="space-y-2">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
               >
-                {isRegistering ? "Đang tạo tài khoản..." : "Đăng ký"}
-              </Button>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            placeholder="Nhập họ và tên"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* General Error Message - only show if not a field-specific error */}
-              {message && 
-               !message.toLowerCase().includes("email") && 
-               !message.includes("taken") &&
-               !message.toLowerCase().includes("name") && 
-               !message.includes("tên") && 
-               !message.toLowerCase().includes("password") && 
-               !message.includes("mật khẩu") && (
-                <div className="text-center">
-                  <p className="text-sm text-red-600">{message}</p>
-                </div>
-              )}
-            </form>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <MailCheck className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            type="email"
+                            placeholder="Nhập email"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mật khẩu</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Nhập mật khẩu"
+                            className="pl-10 pr-10"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                <FormField
+                  control={form.control}
+                  name="password_confirmation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Xác nhận mật khẩu</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Nhập lại mật khẩu"
+                            className="pl-10 pr-10"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-medium"
+                  disabled={isLoading}
+                >
+                  {!isLoading && !isRegisted && "Đăng ký"}
+                  {isLoading && "Đang đăng ký..."}
+                  {isRegisted && "Gửi lại email"}
+                </Button>
+              </form>
+            </Form>
             {/* Login Link */}
             <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">

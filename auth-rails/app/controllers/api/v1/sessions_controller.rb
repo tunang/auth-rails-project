@@ -2,18 +2,19 @@ class Api::V1::SessionsController < ApplicationController
   include TokenGenerator
   respond_to :json
 
-  #POST api/v1/login
+  # POST api/v1/login
   def create
     user = User.find_for_database_authentication(email: params[:email])
 
     if user&.valid_password?(params[:password])
       app = Doorkeeper::Application.find_by(name: 'WebApp')
 
-      access_token = generate_token(user, app) #Default expire 2 hours for access token, no scope, check TokenGenerator for details
+      access_token = generate_token(user, app) # Default expire 2 hours for access token, no scope, check TokenGenerator for details
+
       render json: {
                status: {
                  code: 200,
-                 message: 'Log in successfully.',
+                 message: 'login_success',
                },
                data: UserSerializer.new(user).as_json,
                access_token: access_token.token,
@@ -22,15 +23,12 @@ class Api::V1::SessionsController < ApplicationController
              status: :ok
     else
       render json: {
-               status: 'error',
+               status: {
+                 code: 401,
+                 message: 'invalid_credentials',
+               },
                data: nil,
-               errors: [
-                 {
-                   code: 'INVALID_CREDENTIALS',
-                   title: 'Unauthorized',
-                   detail: 'Invalid email or password',
-                 },
-               ],
+               errors: ['Invalid email or password'],
              },
              status: :unauthorized
     end

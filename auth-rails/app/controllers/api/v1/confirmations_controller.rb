@@ -9,7 +9,7 @@ class Api::V1::ConfirmationsController < Devise::ConfirmationsController
       render json: {
                status: {
                  code: 200,
-                 message: 'Confirmation email sent',
+                 message: 'confirmation_email_sent',
                },
                data: nil,
              },
@@ -18,8 +18,9 @@ class Api::V1::ConfirmationsController < Devise::ConfirmationsController
       render json: {
                status: {
                  code: 422,
-                 message: 'Confirmation email could not be sent',
+                 message: 'confirmation_email_failed',
                },
+               data: nil,
                errors: resource.errors.full_messages,
              },
              status: :unprocessable_entity

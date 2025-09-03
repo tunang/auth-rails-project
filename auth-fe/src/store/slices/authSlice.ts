@@ -6,10 +6,11 @@ import type {
   ForgotPasswordRequest, 
   ResetPasswordRequest 
 } from '@/schemas/auth.schema';
-import type { AuthResponse, Role } from '@/types';
+import type { ApiResponse, AuthResponse, Role } from '@/types';
+import type { User } from '@/types/user.type';
 
 interface AuthState {
-  user: any;
+  user: User | null;
   message: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -50,7 +51,7 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.user = action.payload.data;
       state.isAuthenticated = true;
-      state.message = null;
+      state.message = action.payload.status.message;
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -64,9 +65,9 @@ const authSlice = createSlice({
       state.isLoading = true;
       state.message = null;
     },
-    registerSuccess: (state, action: PayloadAction<{ message: string }>) => {
+    registerSuccess: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
-      state.message = action.payload.message;
+      state.message = action.payload;
     },
     registerFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -132,13 +133,13 @@ const authSlice = createSlice({
     },
 
     // Resend confirmation actions
-    resendConfirmationRequest: (state, action: PayloadAction<{ email: string }>) => {
+    resendConfirmationRequest: (state, action: PayloadAction<string>) => {
       state.isLoading = true;
       state.message = null;
     },
-    resendConfirmationSuccess: (state, action: PayloadAction<{ message: string }>) => {
+    resendConfirmationSuccess: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
-      state.message = action.payload.message;
+      state.message = action.payload;
     },
     resendConfirmationFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;

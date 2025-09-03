@@ -2,6 +2,8 @@ class Api::V1::RegistrationsController < ApplicationController
   respond_to :json
 
   def create
+    user = User.find_by()
+
     user = User.new(user_params)
 
     if user.save
@@ -10,17 +12,16 @@ class Api::V1::RegistrationsController < ApplicationController
       render json: {
                status: {
                  code: 201,
-                 message:
-                   'User created successfully. Please check your email to confirm your account.',
+                 message: 'user_created_successfully',
                },
-               data: user,
+               data: UserSerializer.new(user).as_json,
              },
              status: :created
     else
       render json: {
                status: {
                  code: 422,
-                 message: 'User creation failed',
+                 message: "user_creation_failed",
                },
                errors: user.errors.full_messages,
              },

@@ -6,6 +6,7 @@ import type {
   ResetPasswordRequest 
 } from "@/schemas/auth.schema";
 import type { ApiResponse, AuthResponse } from "@/types";
+import type { User } from "@/types/user.type";
 
 // Base API instance for auth endpoints (no auth token required)
 const apiAuth = api;
@@ -14,7 +15,7 @@ export const authApi = {
   // Register new user
   async register(
     credentials: RegisterRequest
-  ): Promise<ApiResponse<{ user: any; status: string; message: string }>> {
+  ): Promise<ApiResponse<User>> {
     const response = await apiAuth.post('/register', credentials);
     return response.data;
   },
@@ -22,7 +23,7 @@ export const authApi = {
   // Login user
   async login(
     credentials: LoginRequest
-  ): Promise<AuthResponse> {
+  ): Promise<ApiResponse<User>> {
     const response = await apiAuth.post('/login', credentials);
     return response.data;
   },
@@ -60,8 +61,8 @@ export const authApi = {
   // Resend confirmation email
   async resendConfirmation(
     email: string
-  ): Promise<ApiResponse<{ status: string; message: string }>> {
-    const response = await apiAuth.post('/confirmations', { email });
+  ): Promise<ApiResponse<null>> {
+    const response = await apiAuth.post('/confirmation', { email });
     return response.data;
   },
 
