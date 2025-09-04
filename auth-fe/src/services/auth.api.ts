@@ -5,7 +5,7 @@ import type {
   ForgotPasswordRequest, 
   ResetPasswordRequest 
 } from "@/schemas/auth.schema";
-import type { ApiResponse, AuthResponse } from "@/types";
+import type { ApiResponse } from "@/types";
 import type { User } from "@/types/user.type";
 
 // Base API instance for auth endpoints (no auth token required)
@@ -37,7 +37,7 @@ export const authApi = {
   // Forgot password - send reset email
   async forgotPassword(
     credentials: ForgotPasswordRequest
-  ): Promise<ApiResponse<{ status: string; message: string }>> {
+  ): Promise<ApiResponse<null>> {
     const response = await apiAuth.post('/forgot', credentials);
     return response.data;
   },

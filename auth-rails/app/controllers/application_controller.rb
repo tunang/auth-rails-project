@@ -23,15 +23,13 @@ class ApplicationController < ActionController::API
 
   def user_not_authorized(exception)
     render json: {
-             status: 'error',
+             status: {
+               code: 403,
+               message: 'not_authorized',
+             },
              data: nil,
              errors: [
-               {
-                 code: 'NOT_AUTHORIZED',
-                 title: 'Forbidden',
-                 detail:
-                   "BEEP BEEP! You are not allowed to perform #{exception.query} on #{exception.record.class}",
-               },
+               "BEEP BEEP! 🚫 You are not allowed to perform `#{exception.query}` on #{exception.record.class}",
              ],
            },
            status: :forbidden
@@ -56,15 +54,12 @@ class ApplicationController < ActionController::API
   def doorkeeper_unauthorized_render_options(error: nil)
     {
       json: {
-        status: 'error',
+        status: {
+          code: 401,
+          message: 'invalid_token',
+        },
         data: nil,
-        errors: [
-          {
-            code: 'INVALID_TOKEN',
-            title: 'Unauthorized',
-            detail: 'Access token is missing or invalid',
-          },
-        ],
+        errors: ['Access token is missing or invalid'],
       },
     }
   end

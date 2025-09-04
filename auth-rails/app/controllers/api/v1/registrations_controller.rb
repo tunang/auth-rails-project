@@ -2,7 +2,6 @@ class Api::V1::RegistrationsController < ApplicationController
   respond_to :json
 
   def create
-    user = User.find_by()
 
     user = User.new(user_params)
 

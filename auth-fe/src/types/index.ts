@@ -27,13 +27,7 @@ export type ApiResponse<T> = {
     message: string;
   };
   errors?: string[];
-  meta?: {
-    current_page: number;
-    next_page: number;
-    prev_page: number;
-    total_pages: number;
-    total_count: number;
-  };
+  pagination?: Pagination;
 };
 
 export type ErrorResponse = {
@@ -42,4 +36,12 @@ export type ErrorResponse = {
     message: string;
   };
   errors: string[];
+};
+
+export type Pagination = {
+  current_page: number;
+  next_page: number | null;
+  prev_page: number | null;
+  total_pages: number;
+  total_count: number;
 };

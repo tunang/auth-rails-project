@@ -53,8 +53,7 @@ export type ForgotPasswordRequest = z.infer<typeof forgotPasswordSchema>;
 // Reset Password Schema (for API request)
 export const resetPasswordSchema = z.object({
   reset_password_token: z
-    .string()
-    .min(1, "Token đặt lại mật khẩu là bắt buộc"),
+    .string(),
   password: z
     .string()
     .min(1, "Mật khẩu là bắt buộc")

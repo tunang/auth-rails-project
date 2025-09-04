@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useAppSelector } from "@/hooks/useAppDispatch";
+import { ListOrderedIcon, LogOutIcon, MapPinIcon, ShieldIcon, UserIcon } from "lucide-react";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,10 +20,10 @@ const Header = () => {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const navigate = useNavigate();
 
+  const {user, isAuthenticated} = useAppSelector((state) => state.auth);
+
   // Mock data - sẽ được thay thế bằng state management thực tế
-  const isLoggedIn = false;
   const cartItemCount = 3;
-  const userName = "Nguyễn Văn A";
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,12 +164,12 @@ const Header = () => {
             </Link>
 
             {/* User Menu */}
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative flex items-center space-x-2 text-gray-600 hover:text-red-600">
                     <Avatar className="h-7 w-7">
-                      <AvatarFallback className="bg-red-100 text-red-600">{userName.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-red-100 text-red-600">{user?.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <span className="hidden lg:inline-block text-sm">Tài khoản</span>
                   </Button>
@@ -175,25 +177,31 @@ const Header = () => {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{userName}</p>
+                      <p className="font-medium">{user?.name}</p>
                       <p className="w-[200px] truncate text-sm text-muted-foreground">
-                        user@example.com
+                        {user?.email}
                       </p>
                     </div>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/orders">📦 Đơn hàng của tôi</Link>
+                    <Link to="/orders"><ListOrderedIcon /> Đơn hàng của tôi</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/address">📍 Sổ địa chỉ</Link>
+                      <Link to="/address"><MapPinIcon /> Sổ địa chỉ</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/profile">👤 Thông tin cá nhân</Link>
+                    <Link to="/profile"><UserIcon /> Thông tin cá nhân</Link>
                   </DropdownMenuItem>
+
+                  {user?.role === "admin" && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin"><ShieldIcon /> Quản trị</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-red-600">
-                    🚪 Đăng xuất
+                    <LogOutIcon /> Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

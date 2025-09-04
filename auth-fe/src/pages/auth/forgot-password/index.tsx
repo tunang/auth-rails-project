@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,9 +13,7 @@ import {
 } from "@/components/ui/card";
 import {
   forgotPasswordSchema,
-  loginSchema,
   type ForgotPasswordRequest,
-  type LoginRequest,
 } from "@/schemas/auth.schema";
 import { Form } from "@/components/ui/form";
 

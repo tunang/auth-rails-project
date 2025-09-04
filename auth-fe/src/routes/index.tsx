@@ -7,6 +7,11 @@ import Confirm from "@/pages/auth/confirm";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import ResetPassword from "@/pages/auth/reset-password";
 import MainLayout from "@/layout/main";
+import ProtectedRoute from "./ProtectedRoute";
+import AdminLayout from "@/layout/admin";
+import { Role } from "@/types";
+import BooksPage from "@/pages/admin/books/page";
+import CategoriesPage from "@/pages/admin/categories/page";
 // import Books from "@/pages/admin/books";
 // import Categories from "@/pages/admin/categories";
 // import Authors from "@/pages/admin/authors";
@@ -120,37 +125,37 @@ const router = createBrowserRouter([
     path: "/reset",
     element: <ResetPassword />,
   },
-  // {
-  //   path: 'admin',
-  //   element: (
-  //     <ProtectedRoute allowedRoles={[Role.ADMIN]}>
-  //       <AdminLayout />
-  //     </ProtectedRoute>
-  //   ),
+  {
+    path: 'admin',
+    element: (
+      <ProtectedRoute allowedRoles={[Role.ADMIN]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
    
-  //   children: [
-  //     {
-  //       path: 'analytics',
-  //       element: <Analytics />
-  //     },
-  //     {
-  //       path: 'books',
-  //       element: <Books />
-  //     },
-  //           {
-  //       path: 'categories',
-  //       element: <Categories />
-  //     },
-  //     {
-  //       path: 'authors',
-  //       element: <Authors />
-  //     },
-  //     {
-  //       path: 'orders',
-  //       element: <Orders />
-  //     }
-  //   ]
-  // }
+    children: [
+      // {
+      //   path: 'analytics',
+      //   element: <Analytics />
+      // },
+      {
+        path: 'books',
+        element: <BooksPage />
+      },
+            {
+        path: 'categories',
+        element: <CategoriesPage />
+      },
+      // {
+      //   path: 'authors',
+      //   element: <Authors />
+      // },
+      // {
+      //   path: 'orders',
+      //   element: <Orders />
+      // }
+    ]
+  }
 ]);
 
 const AppRoutes = () => {

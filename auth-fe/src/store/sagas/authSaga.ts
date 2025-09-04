@@ -23,9 +23,7 @@ import {
   resendConfirmationRequest,
   resendConfirmationSuccess,
   resendConfirmationFailure,
-  refreshTokenRequest,
-  refreshTokenSuccess,
-  refreshTokenFailure,
+
 } from "../slices/authSlice";
 import { authApi } from "@/services/auth.api";
 import { toast } from "sonner";
@@ -35,30 +33,8 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from "@/schemas/auth.schema";
-import type { ApiResponse, AuthResponse, ErrorResponse } from "@/types";
+import type { ApiResponse, AuthResponse } from "@/types";
 import type { User } from "@/types/user.type";
-
-// Helper function to parse error messages
-function parseErrorMessage(error: any, fallbackMessage: string): string {
-  if (error.response?.data) {
-    const errorData = error.response.data;
-
-    // Handle error format: { status: { message }, errors: [...] }
-    if (
-      errorData.errors &&
-      Array.isArray(errorData.errors) &&
-      errorData.errors.length > 0
-    ) {
-      return errorData.errors[0];
-    } else if (errorData.status?.message) {
-      return errorData.status.message;
-    } else if (errorData.message) {
-      return errorData.message;
-    }
-  }
-
-  return fallbackMessage;
-}
 
 // Login saga
 function* loginSaga(action: PayloadAction<LoginRequest>): SagaIterator {
@@ -137,21 +113,19 @@ function* logoutSaga(): SagaIterator {
 function* forgotPasswordSaga(
   action: PayloadAction<ForgotPasswordRequest>
 ): SagaIterator {
-
   try {
     const credentials = action.payload;
 
-    const response: ApiResponse<null> =
-      yield call(authApi.forgotPassword, credentials);
+    const response: ApiResponse<null> = yield call(
+      authApi.forgotPassword,
+      credentials
+    );
 
     yield put(forgotPasswordSuccess(response.status.message));
-
-  
-  } catch (error: any) {
-    const errorMessage = parseErrorMessage(
-      error,
-      "Email không tồn tại trong hệ thống."
-    );
+  } catch (error: ApiResponse<null> | any) {
+    const errorMessage =
+      error.response.data.status.message ||
+      "Đăng ký thất bại. Vui lòng thử lại.";
 
     yield put(forgotPasswordFailure(errorMessage));
   }
@@ -161,34 +135,21 @@ function* forgotPasswordSaga(
 function* resetPasswordSaga(
   action: PayloadAction<ResetPasswordRequest>
 ): SagaIterator {
-  const toastId = toast.loading("Đang đặt lại mật khẩu...");
-
   try {
     const credentials = action.payload;
 
-    const response: ApiResponse<{ status: string; message: string }> =
-      yield call(authApi.resetPassword, credentials);
-
-    yield put(resetPasswordSuccess({ message: response.data.message }));
-
-    toast.success(
-      "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập với mật khẩu mới.",
-      {
-        id: toastId,
-        duration: 5000,
-      }
+    const response: ApiResponse<null> = yield call(
+      authApi.resetPassword,
+      credentials
     );
 
-    // Navigate to login
-    window.location.href = "/auth/login";
-  } catch (error: any) {
-    const errorMessage = parseErrorMessage(
-      error,
-      "Token không hợp lệ hoặc đã hết hạn."
-    );
+    yield put(resetPasswordSuccess(response.status.message));
+  } catch (error: ApiResponse<null> | any) {
+    const errorMessage =
+      error.response.data.status.message ||
+      "Đặt lại mật khẩu thất bại. Vui lòng thử lại.";
 
     yield put(resetPasswordFailure(errorMessage));
-    toast.error(errorMessage, { id: toastId });
   }
 }
 
@@ -196,36 +157,19 @@ function* resetPasswordSaga(
 function* confirmEmailSaga(
   action: PayloadAction<{ token: string }>
 ): SagaIterator {
-  const toastId = toast.loading("Đang xác thực email...");
-
   try {
     const { token } = action.payload;
 
-    const response: ApiResponse<{ status: string; message: string }> =
-      yield call(authApi.confirmEmail, token);
+    const response: ApiResponse<null> = yield call(authApi.confirmEmail, token);
 
-    yield put(confirmEmailSuccess({ message: response.data.message }));
+    yield put(confirmEmailSuccess(response.status.message));
 
-    toast.success(
-      "Xác thực email thành công! Tài khoản của bạn đã được kích hoạt.",
-      {
-        id: toastId,
-        duration: 5000,
-      }
-    );
-
-    // Navigate to login
-    setTimeout(() => {
-      window.location.href = "/auth/login";
-    }, 2000);
-  } catch (error: any) {
-    const errorMessage = parseErrorMessage(
-      error,
-      "Token xác thực không hợp lệ hoặc đã hết hạn."
-    );
+  } catch (error: ApiResponse<null> | any) {
+    const errorMessage =
+      error.response.data.status.message ||
+      "Token xác thực không hợp lệ hoặc đã hết hạn.";
 
     yield put(confirmEmailFailure(errorMessage));
-    toast.error(errorMessage, { id: toastId });
   }
 }
 
@@ -246,46 +190,46 @@ function* resendConfirmationSaga(action: PayloadAction<string>): SagaIterator {
 }
 
 // Refresh token saga
-function* refreshTokenSaga(): SagaIterator {
-  try {
-    const refreshToken = localStorage.getItem("refresh_token");
-    if (!refreshToken) {
-      throw new Error("No refresh token available");
-    }
+// function* refreshTokenSaga(): SagaIterator {
+//   try {
+//     const refreshToken = localStorage.getItem("refresh_token");
+//     if (!refreshToken) {
+//       throw new Error("No refresh token available");
+//     }
 
-    const response: ApiResponse<{
-      access_token: string;
-      refresh_token: string;
-    }> = yield call(authApi.refreshToken, refreshToken);
+//     const response: ApiResponse<{
+//       access_token: string;
+//       refresh_token: string;
+//     }> = yield call(authApi.refreshToken, refreshToken);
 
-    // Store new tokens
-    const { access_token, refresh_token: newRefreshToken } = response.data;
-    localStorage.setItem("access_token", access_token);
-    if (newRefreshToken) {
-      localStorage.setItem("refresh_token", newRefreshToken);
-    }
+//     // Store new tokens
+//     const { access_token, refresh_token: newRefreshToken } = response.data;
+//     localStorage.setItem("access_token", access_token);
+//     if (newRefreshToken) {
+//       localStorage.setItem("refresh_token", newRefreshToken);
+//     }
 
-    yield put(
-      refreshTokenSuccess({
-        access_token,
-        refresh_token: newRefreshToken,
-      })
-    );
-  } catch (error: any) {
-    // Clear tokens if refresh fails
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+//     yield put(
+//       refreshTokenSuccess({
+//         access_token,
+//         refresh_token: newRefreshToken,
+//       })
+//     );
+//   } catch (error: any) {
+//     // Clear tokens if refresh fails
+//     localStorage.removeItem("access_token");
+//     localStorage.removeItem("refresh_token");
 
-    yield put(refreshTokenFailure());
+//     yield put(refreshTokenFailure());
 
-    toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
-      duration: 4000,
-    });
+//     toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
+//       duration: 4000,
+//     });
 
-    // Navigate to login
-    window.location.href = "/auth/login";
-  }
-}
+//     // Navigate to login
+//     window.location.href = "/auth/login";
+//   }
+// }
 
 // Root auth saga
 export function* authSaga(): SagaIterator {
@@ -297,5 +241,5 @@ export function* authSaga(): SagaIterator {
   yield takeLatest(resetPasswordRequest.type, resetPasswordSaga);
   yield takeLatest(confirmEmailRequest.type, confirmEmailSaga);
   yield takeLatest(resendConfirmationRequest.type, resendConfirmationSaga);
-  yield takeLatest(refreshTokenRequest.type, refreshTokenSaga);
+  // yield takeLatest(refreshTokenRequest.type, refreshTokenSaga);
 }

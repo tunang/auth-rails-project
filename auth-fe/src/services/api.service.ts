@@ -50,7 +50,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     // Kiểm tra nếu error là 401 và liên quan đến access token hết hạn
-    if (error.response.data.status.message === "unauthorized" && !originalRequest._retry) {
+    if (error.response.data.status.message === "invalid_token" && !originalRequest._retry) {
       console.log('Access token expired, starting refresh process...');
       
       if (isRefreshing) {
@@ -79,7 +79,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token available');
         
         // Get new access token
-        const response = await apiAuth.post('/refresh_token', { refresh_token: refreshToken });
+        const response = await apiAuth.post('/refresh', { refresh_token: refreshToken });
         console.log('Token refreshed successfully:', response.data);
         
         // Save new token

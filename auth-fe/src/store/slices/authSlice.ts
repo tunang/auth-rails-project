@@ -1,13 +1,13 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { 
-  LoginRequest, 
-  RegisterRequest, 
-  ForgotPasswordRequest, 
-  ResetPasswordRequest 
-} from '@/schemas/auth.schema';
-import type { ApiResponse, AuthResponse, Role } from '@/types';
-import type { User } from '@/types/user.type';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type {
+  LoginRequest,
+  RegisterRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from "@/schemas/auth.schema";
+import type { AuthResponse } from "@/types";
+import type { User } from "@/types/user.type";
 
 interface AuthState {
   user: User | null;
@@ -19,33 +19,19 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   message: null,
-  isAuthenticated: !!localStorage.getItem('access_token'),
+  isAuthenticated: false,
   isLoading: false,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
-    // Initialize auth
-    // initializeAuth: (state) => {
-    //   state.isLoading = true;
-    //   state.message = null;
-    // },
-
-    // Set user
-    // setUser: (state, action: PayloadAction<User>) => {
-    //   state.isLoading = false;
-    //   state.user = action.payload;
-    //   state.isAuthenticated = true;
-    //   state.message = null;
-    // },
-
     // Login actions
     loginRequest: (state, action: PayloadAction<LoginRequest>) => {
       state.isLoading = true;
       state.message = null;
-    },  
+    },
     loginSuccess: (state, action: PayloadAction<AuthResponse>) => {
       console.log(action.payload.data);
       state.isLoading = false;
@@ -91,13 +77,16 @@ const authSlice = createSlice({
     },
 
     // Forgot password actions
-    forgotPasswordRequest: (state, action: PayloadAction<ForgotPasswordRequest>) => {
+    forgotPasswordRequest: (
+      state,
+      action: PayloadAction<ForgotPasswordRequest>
+    ) => {
       state.isLoading = true;
       state.message = null;
     },
-    forgotPasswordSuccess: (state, action: PayloadAction<{ message: string }>) => {
+    forgotPasswordSuccess: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
-      state.message = action.payload.message;
+      state.message = action.payload;
     },
     forgotPasswordFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -105,13 +94,16 @@ const authSlice = createSlice({
     },
 
     // Reset password actions
-    resetPasswordRequest: (state, action: PayloadAction<ResetPasswordRequest>) => {
+    resetPasswordRequest: (
+      state,
+      action: PayloadAction<ResetPasswordRequest>
+    ) => {
       state.isLoading = true;
       state.message = null;
     },
-    resetPasswordSuccess: (state, action: PayloadAction<{ message: string }>) => {
+    resetPasswordSuccess: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
-      state.message = action.payload.message;
+      state.message = action.payload;
     },
     resetPasswordFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -123,9 +115,12 @@ const authSlice = createSlice({
       state.isLoading = true;
       state.message = null;
     },
-    confirmEmailSuccess: (state, action: PayloadAction<{ message: string }>) => {
-          state.isLoading = false;
-      state.message = action.payload.message;
+    confirmEmailSuccess: (
+      state,
+      action: PayloadAction<string>
+    ) => {
+      state.isLoading = false;
+      state.message = action.payload;
     },
     confirmEmailFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -150,7 +145,10 @@ const authSlice = createSlice({
     refreshTokenRequest: (state) => {
       state.isLoading = true;
     },
-    refreshTokenSuccess: (state, action: PayloadAction<{ access_token: string; refresh_token?: string }>) => {
+    refreshTokenSuccess: (
+      state,
+      action: PayloadAction<{ access_token: string; refresh_token?: string }>
+    ) => {
       state.isLoading = false;
       state.isAuthenticated = true;
     },

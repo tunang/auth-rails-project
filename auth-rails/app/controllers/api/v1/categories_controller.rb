@@ -139,6 +139,28 @@ class Api::V1::CategoriesController < ApplicationController
     end
   end
 
+
+  def restore
+    category = Category.only_deleted.find(params[:id])
+    if category.restore(recursive: true)
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'Category restored successfully',
+               },
+               data: CategorySerializer.new(category).as_json,
+             }
+    else
+      render json: {
+               status: 'error',
+               errors: [
+                 { code: 'RESTORE_FAILED', detail: 'Could not restore category' },
+               ],
+             },
+             status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_category

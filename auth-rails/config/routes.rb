@@ -43,7 +43,9 @@ Rails
           resources :categories
 
           resources :books
+          
           post 'books/:id/restore', to: 'books#restore'
+          post 'categories/:id/restore', to: 'categories#restore'
 
           get 'orders/get_all', to: 'orders#get_all'
         end

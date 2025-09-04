@@ -17,6 +17,7 @@ class BookSerializer
       sample_page_urls: sample_page_urls,
       authors: authors_data,
       categories: categories_data,
+      sync_status: book.sync_status,
       created_at: book.created_at,
       updated_at: book.updated_at
     }

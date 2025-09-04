@@ -34,7 +34,7 @@ class Api::V1::ConfirmationsController < Devise::ConfirmationsController
       render json: {
                status: {
                  code: 200,
-                 message: 'Your email has been confirmed',
+                 message: 'email_confirmed',
                },
                data: nil,
              },
@@ -43,7 +43,7 @@ class Api::V1::ConfirmationsController < Devise::ConfirmationsController
       render json: {
                status: {
                  code: 422,
-                 message: 'Email confirmation failed',
+                 message: 'email_confirmed_failed',
                },
                errors: resource.errors.full_messages,
              },
