@@ -7,10 +7,8 @@ class Api::V1::UsersController < ApplicationController
                code: 200,
                message: 'Get current user successfully.',
              },
-             user:
-               UserSerializer.new(current_user).serializable_hash[:data][
-                 :attributes
-               ],
+             data:
+               UserSerializer.new(current_user).as_json,
            },
            status: :ok
   end

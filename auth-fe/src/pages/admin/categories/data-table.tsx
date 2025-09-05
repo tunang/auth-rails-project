@@ -14,19 +14,30 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus, Search, Trash2 } from "lucide-react";
+import { Filter, Search, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Pagination, PaginationInfo, PerPageSelector } from "@/components/ui/pagination";
+import CreateCategoryModal from "./modal/create-category-modal";
+import type { Pagination as PaginationType } from "@/types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   header: string;
+  pagination: PaginationType;
+  perPage: number;
+  onPageChange: (page: number) => void;
+  onPerPageChange: (perPage: number) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   header,
+  pagination,
+  perPage,
+  onPageChange,
+  onPerPageChange,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -39,9 +50,7 @@ export function DataTable<TData, TValue>({
       <div className="flex justify-between items-center border-b border-gray-200 gap-4">
         <h1 className="text-2xl font-bold">{header}</h1>
         <div className="flex gap-2">
-          <Button>
-            <Plus /> Add
-          </Button>
+          <CreateCategoryModal />
           <Button>
             <Trash2 /> Recycle Bin
           </Button>
@@ -103,6 +112,26 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
+      
+      {/* Pagination Section */}
+      <div className="flex items-center justify-between px-4 py-4 border-t">
+        <div className="flex items-center space-x-4">
+          <PaginationInfo
+            currentPage={pagination.current_page}
+            totalCount={pagination.total_count}
+            perPage={perPage}
+          />
+          <PerPageSelector
+            perPage={perPage}
+            onPerPageChange={onPerPageChange}
+          />
+        </div>
+        <Pagination
+          currentPage={pagination.current_page}
+          totalPages={pagination.total_pages}
+          onPageChange={onPageChange}
+        />
+      </div>
     </div>
   );
 }

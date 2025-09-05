@@ -1,44 +1,64 @@
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import { type Category } from "@/types/category.type";
 import { useDispatch, useSelector } from "react-redux";
-import { getCategoriesRequest } from "@/store/slices/categorySlice";
+import { getCategoriesRequest, setPerPage } from "@/store/slices/categorySlice";
 import React from "react";
 import type { RootState } from "@/store";
+import { toast } from "sonner";
 
 const CategoriesPage = () => {
   const dispatch = useDispatch();
 
-  const { categories: data, pagination, isLoading, message } = useSelector((state: RootState) => state.category);
+  
+  const { categories: data, pagination, message, perPage } = useSelector((state: RootState) => state.category);
   React.useEffect(() => {
-    dispatch(getCategoriesRequest());
-  }, [dispatch]);
+    dispatch(getCategoriesRequest({ page: 1, per_page: perPage }));
+  }, [dispatch, perPage]);
 
-  const sampleData: Category[] = [
-    {
-      id: 1,
-      name: "Category 1",
-      description: "Description 1",
-      parent: null,
-      children: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      name: "Category 2",
-      description: "Description 2",
-      parent: null,
-      children: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ];
+  const handlePageChange = (page: number) => {
+    dispatch(getCategoriesRequest({ page, per_page: perPage }));
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    dispatch(setPerPage(newPerPage));
+    dispatch(getCategoriesRequest({ page: 1, per_page: newPerPage }));
+  };
+
+  React.useEffect(() => {
+    if (message === "category_created_successfully") {
+      toast.success("Thêm danh mục thành công");
+    }
+
+    if (message === "update_category_success") {
+      toast.success("Cập nhật danh mục thành công");
+    }
+
+    if (message === "delete_category_success") {
+      toast.success("Xóa danh mục thành công");
+    }
+
+    if (message === "validation_error") {
+      toast.error("Thêm danh mục thất bại, tên danh mục đã tồn tại");
+    }
+
+    if (message === "update_category_failure") {
+      toast.error("Cập nhật danh mục thất bại");
+    }
+  }, [message]);
+
 
   return (
     <div className="container mx-auto py-10">
       <div>
-        <DataTable columns={columns} data={data} header="Categories" />
+        <DataTable 
+          columns={columns} 
+          data={data} 
+          header="Categories" 
+          pagination={pagination}
+          perPage={perPage}
+          onPageChange={handlePageChange}
+          onPerPageChange={handlePerPageChange}
+        />
       </div>
     </div>
   );

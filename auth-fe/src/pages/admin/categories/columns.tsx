@@ -8,6 +8,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { PopoverClose } from "@radix-ui/react-popover";
+import DeleteCategoryPopoer from "./modal/delete-category-popoer";
+import EditCategoryModal from "./modal/edit-category-modal";
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -45,31 +47,8 @@ export const columns: ColumnDef<Category>[] = [
       const category = row.original;
       return (
         <div className="flex gap-2 justify-center">
-          <Button variant="outline" size="icon" onClick={() => {}}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-            <Popover>
-              <PopoverTrigger>
-                <Button variant="destructive" size="icon">
-                    <Trash className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <div>
-                    <h1>Are you sure you want to delete this category?</h1>
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="destructive" size="icon" className="w-max px-2 py-1" onClick={() => {}}>
-                            Delete
-                        </Button>
-                        <PopoverClose className="PopoverClose">
-                            <Button variant="outline" size="icon" className="w-max px-2 py-1">
-                                Cancel
-                            </Button>
-                        </PopoverClose>
-                    </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+          <DeleteCategoryPopoer category={category} />
+          <EditCategoryModal category={category} />
         </div>
       );
     },

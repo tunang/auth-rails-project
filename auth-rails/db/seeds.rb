@@ -1,9 +1,47 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# db/seeds.rb
+puts "Seeding categories..."
+
+Category.destroy_all
+
+main_categories = [
+  "Fiction",
+  "Non-Fiction",
+  "Science",
+  "Technology",
+  "Arts",
+  "History",
+  "Business",
+  "Health",
+  "Sports",
+  "Travel"
+]
+
+subcategories = {
+  "Fiction" => ["Fantasy", "Mystery", "Romance", "Thriller", "Young Adult"],
+  "Non-Fiction" => ["Biography", "Self-Help", "Philosophy", "Politics", "Religion"],
+  "Science" => ["Physics", "Chemistry", "Biology", "Astronomy", "Mathematics"],
+  "Technology" => ["Programming", "AI & Machine Learning", "Networking", "Cybersecurity", "Databases"],
+  "Arts" => ["Painting", "Music", "Photography", "Theatre", "Dance"],
+  "History" => ["Ancient", "Medieval", "Modern", "Military", "Cultural"],
+  "Business" => ["Finance", "Marketing", "Management", "Entrepreneurship", "Economics"],
+  "Health" => ["Nutrition", "Fitness", "Mental Health", "Medicine", "Wellness"],
+  "Sports" => ["Football", "Basketball", "Tennis", "Cricket", "Olympics"],
+  "Travel" => ["Adventure", "Cultural", "Luxury", "Backpacking", "Nature"]
+}
+
+main_categories.each do |main|
+  parent = Category.create!(
+    name: main,
+    description: "All books related to #{main}"
+  )
+
+  subcategories[main].each do |child|
+    Category.create!(
+      name: child,
+      description: "#{child} books under #{main}",
+      parent: parent
+    )
+  end
+end
+
+puts "✅ Seeded #{Category.count} categories."

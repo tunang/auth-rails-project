@@ -2,6 +2,7 @@ import { call, put, takeLatest } from "redux-saga/effects";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { SagaIterator } from "redux-saga";
 import {
+  initializeAuth,
   loginRequest,
   loginSuccess,
   loginFailure,
@@ -23,9 +24,9 @@ import {
   resendConfirmationRequest,
   resendConfirmationSuccess,
   resendConfirmationFailure,
+  setUser,
 
 } from "../slices/authSlice";
-import { authApi } from "@/services/auth.api";
 import { toast } from "sonner";
 import type {
   LoginRequest,
@@ -33,8 +34,27 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from "@/schemas/auth.schema";
-import type { ApiResponse, AuthResponse } from "@/types";
+import type { AuthResponse, SingleResponse } from "@/types";
 import type { User } from "@/types/user.type";
+import { authApi } from "@/services/auth.api";
+
+
+
+
+// Authentication initialization saga
+function* initializeAuthSaga(): SagaIterator {
+  try {
+    const response : SingleResponse<User> = yield call(authApi.getCurrentUser);
+   
+    yield put(setUser(response.data as User));
+  } catch (error: SingleResponse<null> | any) {
+    const errorMessage =
+      error.response.data.status.message ||
+      "Email hoặc mật khẩu không chính xác.";
+    yield put(loginFailure(errorMessage));
+  }
+}
+
 
 // Login saga
 function* loginSaga(action: PayloadAction<LoginRequest>): SagaIterator {
@@ -53,8 +73,7 @@ function* loginSaga(action: PayloadAction<LoginRequest>): SagaIterator {
     }
 
     yield put(loginSuccess(response));
-  } catch (error: ApiResponse<null> | any) {
-    console.log(error.response);
+  } catch (error: SingleResponse<null> | any) {
     const errorMessage =
       error.response.data.status.message ||
       "Email hoặc mật khẩu không chính xác.";
@@ -67,12 +86,12 @@ function* registerSaga(action: PayloadAction<RegisterRequest>): SagaIterator {
   try {
     const credentials = action.payload;
 
-    const response: ApiResponse<User> = yield call(
+    const response: SingleResponse<User> = yield call(
       authApi.register,
       credentials
     );
     yield put(registerSuccess(response.status.message));
-  } catch (error: ApiResponse<null> | any) {
+  } catch (error: SingleResponse<null> | any) {
     const errorMessage =
       error.response.data.status.message ||
       "Đăng ký thất bại. Vui lòng thử lại.";
@@ -116,13 +135,13 @@ function* forgotPasswordSaga(
   try {
     const credentials = action.payload;
 
-    const response: ApiResponse<null> = yield call(
+    const response: SingleResponse<null> = yield call(
       authApi.forgotPassword,
       credentials
     );
 
     yield put(forgotPasswordSuccess(response.status.message));
-  } catch (error: ApiResponse<null> | any) {
+  } catch (error: SingleResponse<null> | any) {
     const errorMessage =
       error.response.data.status.message ||
       "Đăng ký thất bại. Vui lòng thử lại.";
@@ -138,13 +157,13 @@ function* resetPasswordSaga(
   try {
     const credentials = action.payload;
 
-    const response: ApiResponse<null> = yield call(
+    const response: SingleResponse<null> = yield call(
       authApi.resetPassword,
       credentials
     );
 
     yield put(resetPasswordSuccess(response.status.message));
-  } catch (error: ApiResponse<null> | any) {
+  } catch (error: SingleResponse<null> | any) {
     const errorMessage =
       error.response.data.status.message ||
       "Đặt lại mật khẩu thất bại. Vui lòng thử lại.";
@@ -160,11 +179,11 @@ function* confirmEmailSaga(
   try {
     const { token } = action.payload;
 
-    const response: ApiResponse<null> = yield call(authApi.confirmEmail, token);
+    const response: SingleResponse<null> = yield call(authApi.confirmEmail, token);
 
     yield put(confirmEmailSuccess(response.status.message));
 
-  } catch (error: ApiResponse<null> | any) {
+  } catch (error: SingleResponse<null> | any) {
     const errorMessage =
       error.response.data.status.message ||
       "Token xác thực không hợp lệ hoặc đã hết hạn.";
@@ -178,13 +197,13 @@ function* resendConfirmationSaga(action: PayloadAction<string>): SagaIterator {
   try {
     const email = action.payload;
 
-    const response: ApiResponse<null> = yield call(
+    const response: SingleResponse<null> = yield call(
       authApi.resendConfirmation,
       email
     );
 
     yield put(resendConfirmationSuccess(response.status.message));
-  } catch (error: ApiResponse<null> | any) {
+  } catch (error: SingleResponse<null> | any) {
     yield put(resendConfirmationFailure(error.response.data.status.message));
   }
 }
@@ -197,7 +216,7 @@ function* resendConfirmationSaga(action: PayloadAction<string>): SagaIterator {
 //       throw new Error("No refresh token available");
 //     }
 
-//     const response: ApiResponse<{
+//     const response: SingleResponse<{
 //       access_token: string;
 //       refresh_token: string;
 //     }> = yield call(authApi.refreshToken, refreshToken);
@@ -233,7 +252,7 @@ function* resendConfirmationSaga(action: PayloadAction<string>): SagaIterator {
 
 // Root auth saga
 export function* authSaga(): SagaIterator {
-  // yield takeLatest(initializeAuth.type, initializeAuthSaga);
+  yield takeLatest(initializeAuth.type, initializeAuthSaga);
   yield takeLatest(loginRequest.type, loginSaga);
   yield takeLatest(registerRequest.type, registerSaga);
   yield takeLatest(logoutRequest.type, logoutSaga);

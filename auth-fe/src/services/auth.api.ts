@@ -5,7 +5,7 @@ import type {
   ForgotPasswordRequest, 
   ResetPasswordRequest 
 } from "@/schemas/auth.schema";
-import type { ApiResponse } from "@/types";
+import type { SingleResponse } from "@/types";
 import type { User } from "@/types/user.type";
 
 // Base API instance for auth endpoints (no auth token required)
@@ -15,7 +15,7 @@ export const authApi = {
   // Register new user
   async register(
     credentials: RegisterRequest
-  ): Promise<ApiResponse<User>> {
+  ): Promise<SingleResponse<User>> {
     const response = await apiAuth.post('/register', credentials);
     return response.data;
   },
@@ -23,13 +23,13 @@ export const authApi = {
   // Login user
   async login(
     credentials: LoginRequest
-  ): Promise<ApiResponse<User>> {
+  ): Promise<SingleResponse<User>> {
     const response = await apiAuth.post('/login', credentials);
     return response.data;
   },
 
   // Logout user
-  async logout(): Promise<ApiResponse<{ status: string; message: string }>> {
+  async logout(): Promise<SingleResponse<{ status: string; message: string }>> {
     const response = await apiAuth.delete('/sessions');
     return response.data;
   },
@@ -37,7 +37,7 @@ export const authApi = {
   // Forgot password - send reset email
   async forgotPassword(
     credentials: ForgotPasswordRequest
-  ): Promise<ApiResponse<null>> {
+  ): Promise<SingleResponse<null>> {
     const response = await apiAuth.post('/forgot', credentials);
     return response.data;
   },
@@ -45,7 +45,7 @@ export const authApi = {
   // Reset password with token
   async resetPassword(
     credentials: ResetPasswordRequest
-  ): Promise<ApiResponse<{ status: string; message: string }>> {
+  ): Promise<SingleResponse<{ status: string; message: string }>> {
     const response = await apiAuth.post('/reset', credentials);
     return response.data;
   },
@@ -53,7 +53,7 @@ export const authApi = {
   // Confirm email with token
   async confirmEmail(
     token: string
-  ): Promise<ApiResponse<{ status: string; message: string }>> {
+  ): Promise<SingleResponse<{ status: string; message: string }>> {
     const response = await apiAuth.get(`/confirmation?confirmation_token=${token}`);
     return response.data;
   },
@@ -61,7 +61,7 @@ export const authApi = {
   // Resend confirmation email
   async resendConfirmation(
     email: string
-  ): Promise<ApiResponse<null>> {
+  ): Promise<SingleResponse<null>> {
     const response = await apiAuth.post('/confirmation', { email });
     return response.data;
   },
@@ -69,7 +69,7 @@ export const authApi = {
   // Refresh access token
   async refreshToken(
     refreshToken: string
-  ): Promise<ApiResponse<{ access_token: string; refresh_token: string }>> {
+  ): Promise<SingleResponse<{ access_token: string; refresh_token: string }>> {
     const response = await apiAuth.post('/refresh_token', { 
       refresh_token: refreshToken 
     });
@@ -77,15 +77,15 @@ export const authApi = {
   },
 
   // Get current user profile
-  async getCurrentUser(): Promise<ApiResponse<any>> {
-    const response = await api.get('/users/me');
+  async getCurrentUser(): Promise<SingleResponse<User>> {
+    const response = await api.get('/user/me');
     return response.data;
   },
 
   // Update user profile
   async updateProfile(
     profileData: Partial<any>
-  ): Promise<ApiResponse<{ status: string; message: string }>> {
+  ): Promise<SingleResponse<{ status: string; message: string }>> {
     const response = await api.put('/users/me', profileData);
     return response.data;
   },
@@ -95,7 +95,7 @@ export const authApi = {
     current_password: string;
     new_password: string;
     new_password_confirmation: string;
-  }): Promise<ApiResponse<{ status: string; message: string }>> {
+  }): Promise<SingleResponse<{ status: string; message: string }>> {
     const response = await api.put('/users/password', data);
     return response.data;
   },
@@ -104,7 +104,7 @@ export const authApi = {
   async verifyEmail(
     email: string,
     token: string
-  ): Promise<ApiResponse<{ status: string; message: string }>> {
+  ): Promise<SingleResponse<null>> {
     const response = await apiAuth.post(
       `/confirmations/verify?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`
     );

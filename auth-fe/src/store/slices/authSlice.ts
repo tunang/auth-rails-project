@@ -6,7 +6,7 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from "@/schemas/auth.schema";
-import type { AuthResponse } from "@/types";
+import type {  AuthResponse } from "@/types";
 import type { User } from "@/types/user.type";
 
 interface AuthState {
@@ -27,6 +27,19 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    // Initialize auth
+    initializeAuth: (state) => {
+      state.isLoading = true;
+    },
+
+    // Set user
+    setUser: (state, action: PayloadAction<User>) => {
+      state.isLoading = false;
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.message = null;
+    },
+
     // Login actions
     loginRequest: (state, action: PayloadAction<LoginRequest>) => {
       state.isLoading = true;
@@ -115,10 +128,7 @@ const authSlice = createSlice({
       state.isLoading = true;
       state.message = null;
     },
-    confirmEmailSuccess: (
-      state,
-      action: PayloadAction<string>
-    ) => {
+    confirmEmailSuccess: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.message = action.payload;
     },
@@ -174,6 +184,8 @@ const authSlice = createSlice({
 });
 
 export const {
+  initializeAuth,
+  setUser,
   loginRequest,
   loginSuccess,
   loginFailure,

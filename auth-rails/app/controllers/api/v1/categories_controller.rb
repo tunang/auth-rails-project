@@ -53,37 +53,32 @@ class Api::V1::CategoriesController < ApplicationController
            }, status: :ok
   end
 
-  def create
-    category = Category.new(category_params)
-    authorize Category
-    if category.save
-      render json: {
-               status: {
-                 code: 201,
-                 message: 'Category created successfully',
-               },
-               data: CategorySerializer.new(category).as_json,
+def create
+  category = Category.new(category_params)
+  authorize Category
+
+  if category.save
+    render json: {
+             status: {
+               code: 201,
+               message: 'category_created_successfully',
              },
-             status: :created
-    else
-      render json: {
-               status: 'error',
-               data: nil,
-               errors:
-                 category
-                   .errors
-                   .full_messages
-                   .map { |msg|
-                     {
-                       code: 'VALIDATION_ERROR',
-                       title: 'Unprocessable Entity',
-                       detail: msg,
-                     }
-                   },
+             data: CategorySerializer.new(category).as_json,
+           },
+           status: :created
+  else
+    render json: {
+             status: {
+               code: 422,
+               message: 'validation_error',
              },
-             status: :unprocessable_entity
-    end
+             data: nil,
+             errors: category.errors.full_messages,
+           },
+           status: :unprocessable_entity
   end
+end
+
 
   def update
     authorize @category
