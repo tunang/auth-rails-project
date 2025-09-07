@@ -3,6 +3,8 @@ import createSagaMiddleware from 'redux-saga';
 import authReducer from './slices/authSlice';
 import { rootSaga } from './sagas';
 import categoryReducer from './slices/categorySlice';
+import authorReducer from './slices/authorSlice';
+import bookReducer from './slices/bookSlice';
 
 // Create saga middleware
 const sagaMiddleware = createSagaMiddleware();
@@ -12,6 +14,8 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     category: categoryReducer,
+    author: authorReducer,
+    book: bookReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

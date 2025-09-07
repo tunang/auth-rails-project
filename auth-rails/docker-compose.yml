@@ -1,4 +1,3 @@
-
 services:
   postgres:
     image: postgres:16
@@ -18,18 +17,18 @@ services:
     container_name: redis-auth-rails-project
     restart: always 
     ports:
-    - "56379:6379"
+      - "56379:6379"
     volumes:
-    - "redis_data:/data"
+      - "redis_data:/data"
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
     container_name: es-auth-rails-project
     environment:
       - discovery.type=single-node
-      - ELASTIC_PASSWORD=tuan2004   # mật khẩu cho user "elastic"
+      - ELASTIC_PASSWORD=tuan2004   # mật khẩu user "elastic"
       - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=false  # bật TLS nếu muốn (ở đây tắt cho dễ test)
+      - xpack.security.http.ssl.enabled=false  # tắt SSL cho dễ test
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ulimits:
       memlock:
@@ -40,10 +39,23 @@ services:
     ports:
       - "9200:9200"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "-u", "elastic:changeme", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"]
+      test: ["CMD", "curl", "-fsS", "-u", "elastic:tuan2004", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"]
       interval: 10s
       timeout: 5s
       retries: 10
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.14.3
+    container_name: kibana-auth-rails-project
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=tuan2004
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
 
 volumes:
   postgres_data:

@@ -29,14 +29,9 @@ const categorySlice = createSlice({
   name: "category",
   initialState,
   reducers: {
-    getCategoriesRequest: {
-      reducer: (state, _action: PayloadAction<PaginationParams>) => {
-        state.isLoading = true;
-        state.message = null;
-      },
-      prepare: (params?: PaginationParams) => ({
-        payload: params || {}
-      })
+    getCategoriesRequest: (state, _action: PayloadAction<PaginationParams>) => {
+      state.isLoading = true;
+      state.message = null;
     },
     getCategoriesSuccess: (
       state,
@@ -67,29 +62,33 @@ const categorySlice = createSlice({
       state.message = action.payload;
     },
     
-    updateCategoryRequest: (state, _action: PayloadAction<CategoryRequest & { id: number }>) => {
+    updateCategoryRequest: (state, _action: PayloadAction<CategoryRequest>) => {
       state.isLoading = true;
       state.message = null;
     },
-    updateCategorySuccess: (state, action: PayloadAction<Category>) => {
+    updateCategorySuccess: (state, action: PayloadAction<SingleResponse<Category>>) => {
       state.isLoading = false;
       state.categories = state.categories.map((category) =>
-        category.id === action.payload.id ? action.payload : category
+        category.id === action.payload.data?.id ? action.payload.data as Category : category
       );
+      state.message = action.payload.status.message;
     },
     updateCategoryFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.message = action.payload;
     },
+
+
     deleteCategoryRequest: (state, _action: PayloadAction<number>) => {
       state.isLoading = true;
       state.message = null;
     },
-    deleteCategorySuccess: (state, action: PayloadAction<Category>) => {
+    deleteCategorySuccess: (state, action: PayloadAction<SingleResponse<Category>>) => {
       state.isLoading = false;
       state.categories = state.categories.filter(
-        (category) => category.id !== action.payload.id
+        (category) => category.id !== action.payload.data?.id
       );
+      state.message = action.payload.status.message;
     },
     deleteCategoryFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;

@@ -18,17 +18,16 @@ export function* getCategoriesSaga(action: PayloadAction<PaginationParams>) {
 export function* createCategorySaga(action: PayloadAction<Category>) {
     try {
         const response: SingleResponse<Category> = yield call(categoryApi.admin.createCategory, action.payload);
-        console.log(response);
         yield put(createCategorySuccess(response));
     } catch (error: SingleResponse<null> | any) {
         yield put(createCategoryFailure(error.response.data.status.message));
     }
 }
 
-export function* updateCategorySaga(action: PayloadAction<any>) {
+export function* updateCategorySaga(action: PayloadAction<Category>) {
     try {
         const response: SingleResponse<Category> = yield call(categoryApi.admin.updateCategory, action.payload.id, action.payload);
-        yield put(updateCategorySuccess(response.data as Category));
+        yield put(updateCategorySuccess(response));
     } catch (error: SingleResponse<null> | any) {
         yield put(updateCategoryFailure(error.message));
     }
@@ -37,7 +36,7 @@ export function* updateCategorySaga(action: PayloadAction<any>) {
 export function* deleteCategorySaga(action: PayloadAction<number>) {
     try {
         const response: SingleResponse<Category> = yield call(categoryApi.admin.deleteCategory, action.payload);
-        yield put(deleteCategorySuccess(response.data as Category));
+        yield put(deleteCategorySuccess(response));
     } catch (error: SingleResponse<null> | any) {
         yield put(deleteCategoryFailure(error.message));
     }

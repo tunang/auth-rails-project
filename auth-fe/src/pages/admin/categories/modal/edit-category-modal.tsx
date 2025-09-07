@@ -33,13 +33,26 @@ import { updateCategoryRequest } from "@/store/slices/categorySlice";
 import type { Category } from "@/types/category.type";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
-import { Pencil, Tag } from "lucide-react";
+import { Pencil, Tag, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { categoryApi } from "@/services/category.api";
+import type { PaginationParams } from "@/types";
 
 const EditCategoryModal = ({ category }: { category: Category }) => {
+  const [searchedCategories, setSearchedCategories] = useState<Category[]>([]);
+  const [searchParams, setSearchParams] = useState<PaginationParams>({
+    page: 1,
+    per_page: 50,
+    search: "",
+  });
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppDispatch();
+
   const { isLoading } = useAppSelector((state) => state.category);
+
   const form = useForm<CategoryRequest>({
     mode: "onTouched",
     resolver: zodResolver(categorySchema),
@@ -49,6 +62,73 @@ const EditCategoryModal = ({ category }: { category: Category }) => {
       parent_id: category.parent?.id,
     },
   });
+
+  // Function to search categories
+  const searchCategories = async (searchTerm: string) => {
+    setIsSearching(true);
+    try {
+      const updatedParams = { ...searchParams, search: searchTerm };
+      setSearchParams(updatedParams);
+      const response = await categoryApi.admin.getCategories(updatedParams);
+      // Lọc bỏ category hiện tại để tránh self-reference
+      const filteredCategories = response.data.filter(cat => cat.id !== category.id);
+      
+      // Thêm current parent vào list nếu có và không có trong kết quả search
+      if (category.parent && !filteredCategories.find(cat => cat.id === category.parent?.id)) {
+        filteredCategories.unshift(category.parent);
+      }
+      
+      setSearchedCategories(filteredCategories);
+    } catch (error) {
+      console.error("Error searching categories:", error);
+      setSearchedCategories([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (searchTerm: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          searchCategories(searchTerm);
+        }, 300);
+      };
+    })(),
+    [category.id] // Chỉ depend on category.id để giữ consistent array size
+  );
+
+  // Load categories when modal opens
+  const loadInitialCategories = async () => {
+    try {
+      const response = await categoryApi.admin.getCategories({
+        page: 1,
+        per_page: 10,
+        search: "",
+      });
+      // Lọc bỏ category hiện tại để tránh self-reference
+      const filteredCategories = response.data.filter(cat => cat.id !== category.id);
+      
+      // Thêm current parent vào list nếu có để hiển thị
+      if (category.parent && !filteredCategories.find(cat => cat.id === category.parent?.id)) {
+        filteredCategories.unshift(category.parent);
+      }
+      
+      setSearchedCategories(filteredCategories);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+    }
+  };
+
+  // Focus input after search results update
+  useEffect(() => {
+    if (!isSearching && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearching, searchedCategories]);
 
   // Cập nhật form values khi prop category thay đổi
   useEffect(() => {
@@ -62,8 +142,18 @@ const EditCategoryModal = ({ category }: { category: Category }) => {
   const onSubmit = async (data: CategoryRequest) => {
     dispatch(updateCategoryRequest({ ...data, id: category.id }));
   };
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={(open) => {
+      if (open) {
+        // Load categories only when modal opens
+        loadInitialCategories();
+      } else {
+        // Reset search when modal closes
+        setSearchTerm("");
+        setSearchedCategories([]);
+      }
+    }}>
       <DialogTrigger asChild>
       <div>
           <Button variant="outline">
@@ -128,13 +218,67 @@ const EditCategoryModal = ({ category }: { category: Category }) => {
                     <FormControl>
                       <Select
                         onValueChange={(value) => field.onChange(Number(value))}
+                        disabled={isSearching}
+                        value={field.value?.toString() || ""}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Chọn danh mục cha" />
+                          <SelectValue
+                            placeholder={
+                              isSearching
+                                ? "Đang tìm kiếm..."
+                                : "Chọn danh mục cha"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">Danh mục 1</SelectItem>
-                          <SelectItem value="2">Danh mục 2</SelectItem>
+                          <div className="sticky top-0 bg-white z-10 mb-2">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                              <Input
+                                ref={searchInputRef}
+                                type="text"
+                                placeholder="Tìm kiếm danh mục cha..."
+                                className="pl-10 h-8"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setSearchTerm(value);
+                                  debouncedSearch(value);
+                                }}
+                                onKeyDown={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onMouseDown={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onFocus={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onBlur={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                disabled={isSearching}
+                                autoFocus
+                              />
+                            </div>
+                          </div>
+                          {searchedCategories.length === 0 ? (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              Không có danh mục nào
+                            </div>
+                          ) : (
+                            searchedCategories.map((cat) => (
+                              <SelectItem
+                                key={cat.id}
+                                value={cat.id.toString()}
+                              >
+                                {cat.name}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </FormControl>

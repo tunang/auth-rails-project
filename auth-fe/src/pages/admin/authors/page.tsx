@@ -1,44 +1,44 @@
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { useDispatch, useSelector } from "react-redux";
-import { getCategoriesRequest, setPerPage } from "@/store/slices/categorySlice";
+import { getAuthorsRequest, setPerPage } from "@/store/slices/authorSlice";
 import React, { useCallback, useEffect, useState } from "react";
 import type { RootState } from "@/store";
 import { toast } from "sonner";
-import CreateCategoryModal from "./modal/create-category-modal";
+import CreateAuthorModal from "./modal/create-author-modal";
 import { Button } from "@/components/ui/button";
 import { Filter, Search, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-const CategoriesPage = () => {
-  const header = "Danh mục";
+const AuthorsPage = () => {
+  const header = "Tác giả";
   const dispatch = useDispatch();
   const [searchParam, setSearchParam] = React.useState("");
   const [searchInput, setSearchInput] = useState(searchParam);
 
   const {
-    categories: data,
+    authors: data,
     pagination,
     message,
     perPage,
-  } = useSelector((state: RootState) => state.category);
+  } = useSelector((state: RootState) => state.author);
 
   useEffect(() => {
     dispatch(
-      getCategoriesRequest({ page: 1, per_page: perPage, search: searchParam })
+      getAuthorsRequest({ page: 1, per_page: perPage, search: searchParam })
     );
   }, [dispatch, perPage, searchParam]);
 
   const handlePageChange = (page: number) => {
     dispatch(
-      getCategoriesRequest({ page, per_page: perPage, search: searchParam })
+      getAuthorsRequest({ page, per_page: perPage, search: searchParam })
     );
   };
 
   const handlePerPageChange = (newPerPage: number) => {
     dispatch(setPerPage(newPerPage));
     dispatch(
-      getCategoriesRequest({
+      getAuthorsRequest({
         page: 1,
         per_page: newPerPage,
         search: searchParam,
@@ -48,28 +48,28 @@ const CategoriesPage = () => {
 
   const handleSearchParamChange = (search: string) => {
     setSearchParam(search);
-    dispatch(getCategoriesRequest({ page: 1, per_page: perPage, search }));
+    dispatch(getAuthorsRequest({ page: 1, per_page: perPage, search }));
   };
 
   React.useEffect(() => {
-    if (message === "category_created_successfully") {
-      toast.success("Thêm danh mục thành công");
+    if (message === "author_created_successfully") {
+      toast.success("Thêm tác giả thành công");
     }
 
-    if (message === "category_updated_successfully") {
-      toast.success("Cập nhật danh mục thành công");
+    if (message === "author_updated_successfully") {
+      toast.success("Cập nhật tác giả thành công");
     }
 
-    if (message === "category_deleted_successfully") {
-      toast.success("Xóa danh mục thành công");
+    if (message === "author_deleted_successfully") {
+      toast.success("Xóa tác giả thành công");
     }
 
     if (message === "validation_error") {
-      toast.error("Thêm danh mục thất bại, tên danh mục đã tồn tại");
+      toast.error("Thêm tác giả thất bại, vui lòng kiểm tra lại thông tin");
     }
 
-    if (message === "update_category_failure") {
-      toast.error("Cập nhật danh mục thất bại");
+    if (message === "update_author_failure") {
+      toast.error("Cập nhật tác giả thất bại");
     }
   }, [message]);
 
@@ -88,6 +88,7 @@ const CategoriesPage = () => {
   );
 
 
+
   return (
     <div className="container mx-auto py-10">
       <div>
@@ -95,9 +96,9 @@ const CategoriesPage = () => {
           <div className="flex justify-between items-center border-b border-gray-200 gap-4">
             <h1 className="text-2xl font-bold">{header}</h1>
             <div className="flex gap-2">
-              <CreateCategoryModal />
+              <CreateAuthorModal />
               <Button>
-                <Trash2 /> Recycle Bin
+                <Trash2 /> Thùng rác
               </Button>
             </div>
           </div>
@@ -105,7 +106,7 @@ const CategoriesPage = () => {
           <div className="p-4 flex justify-between">
             <div className="flex gap-2">
               <Input
-                placeholder="Search categories..."
+                placeholder="Tìm kiếm tác giả..."
                 value={searchInput}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -114,7 +115,7 @@ const CategoriesPage = () => {
                 }}
               />
               <Button>
-                <Search /> Search
+                <Search /> Tìm kiếm
               </Button>
             </div>
 
@@ -126,7 +127,7 @@ const CategoriesPage = () => {
         <DataTable
           columns={columns}
           data={data}
-          header="Categories"
+          header="Authors"
           pagination={pagination}
           perPage={perPage}
           searchParam={searchParam}
@@ -138,4 +139,4 @@ const CategoriesPage = () => {
   );
 };
 
-export default CategoriesPage;
+export default AuthorsPage;

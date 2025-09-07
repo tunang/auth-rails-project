@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
 import { Popover } from "@/components/ui/popover";
 import { PopoverTrigger } from "@/components/ui/popover";
 import { Trash } from "lucide-react";
@@ -7,8 +6,9 @@ import { PopoverContent } from "@/components/ui/popover";
 import { PopoverClose } from "@radix-ui/react-popover";
 import type { Category } from "@/types/category.type";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { createCategoryRequest, deleteCategoryRequest, updateCategoryRequest } from "@/store/slices/categorySlice";
-import type { CategoryRequest } from "@/schemas/category.schema";
+import {
+  deleteCategoryRequest,
+} from "@/store/slices/categorySlice";
 
 const DeleteCategoryPopoer = ({ category }: { category: Category }) => {
   const dispatch = useAppDispatch();
@@ -16,9 +16,6 @@ const DeleteCategoryPopoer = ({ category }: { category: Category }) => {
     dispatch(deleteCategoryRequest(category.id));
   };
 
-  const onSubmit = async (data: CategoryRequest) => {
-    dispatch(updateCategoryRequest(data));
-  };
   return (
     <div className="flex gap-2 justify-center">
       <Popover>

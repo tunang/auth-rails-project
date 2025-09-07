@@ -9,7 +9,7 @@ export const categoryApi = {
   admin: {
     getCategories: async (
       params: PaginationParams = defaultParams
-    ): Promise<ListResponse<Category[]>> => {
+    ): Promise<ListResponse<Category>> => {
       const response = await api.get("/admin/categories", {
         params,
       });

@@ -46,6 +46,18 @@ class Book < ApplicationRecord
     end
   end
 
+
+   # 🔎 Tìm kiếm theo title
+  def self.search_by_name(query)
+    __elasticsearch__.search(
+      {
+        query: {
+          match_phrase_prefix: { title: query }
+        }
+      }
+    ).records
+  end
+
   def as_indexed_json(_options = {})
     {
       title: title,

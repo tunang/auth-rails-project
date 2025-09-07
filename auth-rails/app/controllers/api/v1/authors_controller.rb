@@ -4,12 +4,13 @@ class Api::V1::AuthorsController < ApplicationController
   before_action :set_author, only: %i[show update destroy]
 
   def index
-    authorize Author, :index?
-    authors =
-      Author
-        .includes(photo_attachment: :blob)
-        .page(params[:page] || 1)
-        .per(params[:per_page] || 10)
+    if params[:search].present?
+      authors = Author.search_by_name(params[:search]).page(params[:page] || 1).per(params[:per_page] || 10)
+    else
+      authors = Author.all
+    end
+
+    authors = authors.page(params[:page] || 1).per(params[:per_page] || 10)
 
     render json: {
              status: {
@@ -40,8 +41,7 @@ class Api::V1::AuthorsController < ApplicationController
            status: :ok
   end
 
-
-  def featured 
+  def featured
     books = Book.find
   end
 
@@ -80,14 +80,13 @@ class Api::V1::AuthorsController < ApplicationController
 
   def update
     authorize @author
-    binding.pry
     @author.photo.attach(params[:photo]) if params[:photo]
     if @author.update(author_params)
       render json: {
                status: {
                  code: 200,
                  message: 'Author updated successfully',
-               }, 
+               },
                data: AuthorSerializer.new(@author).as_json,
              },
              status: :ok

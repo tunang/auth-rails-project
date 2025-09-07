@@ -12,6 +12,7 @@ import AdminLayout from "@/layout/admin";
 import { Role } from "@/types";
 import BooksPage from "@/pages/admin/books/page";
 import CategoriesPage from "@/pages/admin/categories/page";
+import AuthorsPage from "@/pages/admin/authors/page";
 // import Books from "@/pages/admin/books";
 // import Categories from "@/pages/admin/categories";
 // import Authors from "@/pages/admin/authors";
@@ -146,10 +147,10 @@ const router = createBrowserRouter([
         path: 'categories',
         element: <CategoriesPage />
       },
-      // {
-      //   path: 'authors',
-      //   element: <Authors />
-      // },
+      {
+        path: 'authors',
+        element: <AuthorsPage />
+      },
       // {
       //   path: 'orders',
       //   element: <Orders />

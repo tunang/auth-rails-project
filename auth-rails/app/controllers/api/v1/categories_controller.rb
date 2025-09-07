@@ -4,27 +4,38 @@ class Api::V1::CategoriesController < ApplicationController
   before_action :set_category, only: %i[show update destroy]
 
   def index
-    authorize Category, :index?
-    categories =
-      Category
-        .page(params[:page] || 1)
-        .per(params[:per_page] || 10)
+  authorize Category, :index?
 
-    render json: {
-             status: {
-               code: 200,
-               message: 'Fetched categories successfully',
-             },
-             data: categories.map { |a| CategorySerializer.new(a).as_json },
-             pagination: {
-               current_page: categories.current_page,
-               next_page: categories.next_page,
-               prev_page: categories.prev_page,
-               total_pages: categories.total_pages,
-               total_count: categories.total_count,
-             },
+  if params[:search].present?
+    # Use elasticsearch
+    categories = Category.search_by_name(params[:search]).page(params[:page] || 1).per(params[:per_page] || 10)
+  else
+    # Use normal AR
+    categories = Category.page(params[:page] || 1).per(params[:per_page] || 10)
+  end
+
+  render json: {
+           status: {
+             code: 200,
+             message: 'Fetched categories successfully',
            },
-           status: :ok
+           data: categories.map { |a| CategorySerializer.new(a).as_json },
+           pagination: {
+             current_page: categories.current_page,
+             next_page: categories.next_page,
+             prev_page: categories.prev_page,
+             total_pages: categories.total_pages,
+             total_count: categories.total_count,
+           },
+         },
+         status: :ok
+end
+
+
+
+  def search
+    results = Category.search_by_name(params[:q])
+    render json: results.select(:id, :name) # only return what frontend needs
   end
 
   def show
@@ -86,7 +97,7 @@ end
       render json: {
                status: {
                  code: 200,
-                 message: 'Category updated successfully',
+                 message: 'category_updated_successfully',
                },
                data: CategorySerializer.new(@category).as_json,
              },
@@ -117,7 +128,7 @@ end
       render json: {
                status: {
                  code: 200,
-                 message: "Category '#{@category.name}' has been deleted.",
+                 message: "category_deleted_successfully",
                },
                data: @category,
              },
