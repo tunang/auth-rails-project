@@ -80,12 +80,11 @@ api.interceptors.response.use(
         
         // Get new access token
         const response = await apiAuth.post('/refresh', { refresh_token: refreshToken });
-        console.log('Token refreshed successfully:', response.data);
+        console.log('Token refreshed successfully:', response);
         
         // Save new token
-        const { access_token, refresh_token } = response.data;
+        const { access_token } = response.data;
         localStorage.setItem('access_token', access_token);
-        localStorage.setItem('refresh_token', refresh_token);
         
         // Process all requests in queue
         processQueue(null, access_token);

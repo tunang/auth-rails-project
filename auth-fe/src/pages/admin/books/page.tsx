@@ -88,10 +88,10 @@ const BooksPage = () => {
   );
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto pt-4">
       <div>
         <div>
-          <div className="flex justify-between items-center border-b border-gray-200 gap-4">
+          <div className="flex justify-between items-center border-b border-gray-200 gap-4 pb-2">
             <h1 className="text-2xl font-bold">{header}</h1>
             <div className="flex gap-2">
               <CreateBookModal />
@@ -101,7 +101,7 @@ const BooksPage = () => {
             </div>
           </div>
 
-          <div className="p-4 flex justify-between">
+          <div className="flex justify-between py-4">
             <div className="flex gap-2">
               <Input
                 placeholder="Tìm kiếm sách..."

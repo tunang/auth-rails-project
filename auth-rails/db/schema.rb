@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_28_083355) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_08_032233) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,7 +20,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_083355) do
     t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
+    t.datetime "deleted_at"
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["deleted_at"], name: "index_active_storage_attachments_on_deleted_at"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
@@ -33,6 +35,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_083355) do
     t.bigint "byte_size", null: false
     t.string "checksum"
     t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.index ["deleted_at"], name: "index_active_storage_blobs_on_deleted_at"
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -73,14 +77,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_083355) do
   end
 
   create_table "book_authors", force: :cascade do |t|
-    t.bigint "book_id", null: false
-    t.bigint "author_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "book_id"
+    t.integer "author_id"
     t.datetime "deleted_at"
-    t.index ["author_id"], name: "index_book_authors_on_author_id"
-    t.index ["book_id", "author_id"], name: "index_book_authors_on_book_id_and_author_id", unique: true
-    t.index ["book_id"], name: "index_book_authors_on_book_id"
     t.index ["deleted_at"], name: "index_book_authors_on_deleted_at"
   end
 
@@ -238,8 +239,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_083355) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "addresses", "users"
-  add_foreign_key "book_authors", "authors"
-  add_foreign_key "book_authors", "books"
   add_foreign_key "book_categories", "books"
   add_foreign_key "book_categories", "categories"
   add_foreign_key "cart_items", "books"

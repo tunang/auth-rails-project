@@ -51,7 +51,7 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=tuan2004
+      - ELASTICSEARCH_PASSWORD=GVAr3a2-wm8JuGZTbwE1
     ports:
       - "5601:5601"
     depends_on:

@@ -294,8 +294,8 @@ const CreateBookModal = () => {
                               type="number"
                               placeholder="0"
                               className="pl-10"
-                              {...field}
                               onChange={(e) => field.onChange(Number(e.target.value))}
+                              {...field}
                             />
                           </div>
                         </FormControl>

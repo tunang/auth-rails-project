@@ -103,7 +103,7 @@ end
                  code: 201,
                  message: 'Book created, syncing with stripe',
                },
-               data: @book,
+               data: BookSerializer.new(@book).as_json,
              },
              status: :created
     else
@@ -127,7 +127,7 @@ end
                  code: 201,
                  message: 'Book updated, syncing with stripe',
                },
-               data: @book,
+               data: BookSerializer.new(@book).as_json,
              },
              status: :created
     else

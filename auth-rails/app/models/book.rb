@@ -1,4 +1,3 @@
-# app/models/book.rb
 class Book < ApplicationRecord
   acts_as_paranoid
 
@@ -46,15 +45,13 @@ class Book < ApplicationRecord
     end
   end
 
+  before_destroy :soft_delete_attachments, prepend: true
+  before_restore :restore_attachments, prepend: true
 
-   # 🔎 Tìm kiếm theo title
+  # 🔎 Tìm kiếm theo title
   def self.search_by_name(query)
     __elasticsearch__.search(
-      {
-        query: {
-          match_phrase_prefix: { title: query }
-        }
-      }
+      { query: { match_phrase_prefix: { title: query } } },
     ).records
   end
 
@@ -66,5 +63,64 @@ class Book < ApplicationRecord
       authors: authors.map(&:name),
       categories: categories.map(&:name),
     }
+  end
+  def destroy_fully!
+    cover_image.purge if cover_image.attached?
+    sample_pages.purge if sample_pages.attached?
+    super
+  end
+
+  private
+
+  def soft_delete_attachments
+    return unless persisted?
+
+    # Với has_one_attached → cần .attachment
+    cover_image&.attachment&.destroy if cover_image.attached?
+
+    # Với has_many_attached → mỗi phần tử đã là attachment → không cần .attachment
+    sample_pages&.each(&:destroy) if sample_pages.attached?
+  end
+
+  def restore_attachments
+    return unless deleted_at
+
+    # Khôi phục attachment và blob
+    restore_attachment(:cover_image)
+    restore_attachments_collection(:sample_pages)
+  end
+
+  def restore_attachment(name)
+    att =
+      ActiveStorage::Attachment.unscoped.find_by(
+        record_type: self.class.name,
+        record_id: id,
+        name: name.to_s,
+      )
+    return unless att&.deleted?
+
+    att.restore
+
+    # 🔥 DÙNG `unscoped` ĐỂ LẤY BLOB KỂ CẢ KHI ĐÃ SOFT-DELETE
+    blob = ActiveStorage::Blob.unscoped.find_by(id: att.blob_id)
+    blob&.restore if blob&.deleted?
+  end
+
+  def restore_attachments_collection(name)
+    attachments =
+      ActiveStorage::Attachment.unscoped.where(
+        record_type: self.class.name,
+        record_id: id,
+        name: name.to_s,
+      )
+    attachments.each do |att|
+      next unless att.deleted?
+
+      att.restore
+
+      # 🔥 DÙNG `unscoped` CHO BLOB
+      blob = ActiveStorage::Blob.unscoped.find_by(id: att.blob_id)
+      blob&.restore if blob&.deleted?
+    end
   end
 end

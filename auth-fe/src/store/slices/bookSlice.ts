@@ -68,6 +68,7 @@ const bookSlice = createSlice({
     },
     updateBookSuccess: (state, action: PayloadAction<SingleResponse<Book>>) => {
       state.isLoading = false;
+      console.log(action.payload);
       state.books = state.books.map((book) =>
         book.id === action.payload.data?.id ? action.payload.data as Book : book
       );

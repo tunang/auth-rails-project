@@ -83,7 +83,7 @@ export const columns: ColumnDef<Book>[] = [
     cell: ({ row }) => {
       const book = row.original;
       return (
-        <div className="text-right">
+        <div className="">
           {new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
@@ -94,7 +94,7 @@ export const columns: ColumnDef<Book>[] = [
   },
   {
     accessorKey: "stock_quantity",
-    header: "Tồn kho",
+    header: () => <div className="text-center w-full">Tồn kho</div>,
     cell: ({ row }) => {
       const book = row.original;
       return (
@@ -108,7 +108,7 @@ export const columns: ColumnDef<Book>[] = [
   },
   {
     accessorKey: "featured",
-    header: "Nổi bật",
+    header: () => <div className="text-center w-full">Nổi bật</div>,
     cell: ({ row }) => {
       const book = row.original;
       return (
@@ -122,7 +122,7 @@ export const columns: ColumnDef<Book>[] = [
   },
   {
     accessorKey: "cover_image_url",
-    header: "Ảnh bìa",
+    header: () => <div className="text-center w-full">Ảnh bìa</div>,
     cell: ({ row }) => {
       const book = row.original;
       return (

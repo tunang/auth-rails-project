@@ -34,10 +34,10 @@ export const columns: ColumnDef<Category>[] = [
   },
   {
     accessorKey: "children",
-    header: "Children",
+    header: () => <div className="text-center w-full">Children</div>,
     cell: ({ row }) => {
       const category = row.original;
-      return <div>{category.children.length}</div>;
+      return <div className="text-center">{category.children.length}</div>;
     },
   },
   {

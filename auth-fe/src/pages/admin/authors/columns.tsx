@@ -40,7 +40,7 @@ export const columns: ColumnDef<Author>[] = [
   },
   {
     accessorKey: "photo",
-    header: "Ảnh",
+    header: () => <div className="text-center w-full">Ảnh</div>,  
     cell: ({ row }) => {
       const author = row.original;
       return (
