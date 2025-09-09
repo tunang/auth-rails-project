@@ -3,6 +3,8 @@ class Api::V1::OrdersController < ApplicationController
   before_action :set_order, only: %i[show update destroy]
   before_action :authorize_order, only: %i[show update destroy]
 
+  include StripeLineItemHelper
+
   def index
     @orders =
       current_user
@@ -64,34 +66,23 @@ class Api::V1::OrdersController < ApplicationController
                code: 200,
                message: 'Fetched order successfully',
              },
-             data: OrderSerializer.new(@order).as_json,
+             data: DetailOrderSerializer.new(@order).as_json,
            },
            status: :ok
   end
 
   def create
-    cart_items = current_user.cart_items.includes(:book)
-    if cart_items.empty?
-      return(
-        render json: {
-                 status: 'error',
-                 data: nil,
-                 errors: [
-                   {
-                     code: 'RECORD_NOT_FOUND',
-                     title: 'Not Found',
-                     detail: 'Cart is empty',
-                   },
-                 ],
-               },
-               status: :not_found
-      )
-    end
-    
+    cart_items = order_params[:order_items]
+
     ActiveRecord::Base.transaction do
-      subtotal = cart_items.sum { |item| item.book.price * item.quantity }
-      tax_amount = subtotal * 0.1
-      shipping_cost = 5
+      subtotal =
+        cart_items.sum do |item|
+          book = Book.find(item[:book_id])
+          book.price * item[:quantity].to_i
+        end
+
+      tax_amount = subtotal * AppConstants::Order::TAX_RATE
+      shipping_cost = AppConstants::Order::SHIPPING_COST
       total_amount = subtotal + tax_amount + shipping_cost
 
       order =
@@ -110,48 +101,24 @@ class Api::V1::OrdersController < ApplicationController
         )
 
       cart_items.each do |item|
-        unit_price = item.book.price
-        quantity = item.quantity
-        total_price = unit_price * quantity
+        book = Book.find(item[:book_id])
+        quantity = item[:quantity].to_i
 
         OrderItem.create!(
           order: order,
-          book: item.book,
+          book: book,
           quantity: quantity,
-          unit_price: unit_price,
-          total_price: total_price,
+          unit_price: book.price,
+          total_price: book.price * quantity,
         )
       end
-
-      # Xóa giỏ hàng
-      cart_items.destroy_all
 
       # Tạo line items cho Stripe
       line_items = StripeService.new.build_line_items_from_order(order)
 
-      # Append tax as separate line item
-      line_items << {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Tax (10%)',
-          },
-          unit_amount: (tax_amount * 100).to_i, # Stripe uses cents
-        },
-        quantity: 1,
-      }
-
-      # Append shipping as separate line item
-      line_items << {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Shipping',
-          },
-          unit_amount: (shipping_cost * 100).to_i, # $5 → 500 cents
-        },
-        quantity: 1,
-      }
+      # Append tax & shipping line items
+      line_items << build_line_item(name: 'Tax (10%)', unit_amount: tax_amount)
+      line_items << build_line_item(name: 'Shipping', unit_amount: shipping_cost)
 
       # Tạo checkout session Stripe
       session =
@@ -248,6 +215,12 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def order_params
-    params.permit(:shipping_address_id, :payment_method, :note, :status)
+    params.permit(
+      :shipping_address_id,
+      :payment_method,
+      :note,
+      :status,
+      order_items: %i[quantity book_id],
+    )
   end
 end

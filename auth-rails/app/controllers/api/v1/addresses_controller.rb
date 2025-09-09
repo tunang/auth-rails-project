@@ -1,7 +1,7 @@
 class Api::V1::AddressesController < ApplicationController
   before_action :doorkeeper_authorize!
   before_action :set_address, only: %i[show update destroy]
-
+  
   def index
     @addresses = current_user.addresses
     authorize Address

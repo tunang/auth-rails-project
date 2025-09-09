@@ -4,11 +4,11 @@ class OrderPolicy < ApplicationPolicy
   end
 
   def get_all?
-    user.admin?
+    user.role == "admin"
   end
 
   def show?
-    user_is_owner? || user.admin?
+    user_is_owner? || user.role == "admin"
   end
 
   def create?
@@ -16,11 +16,11 @@ class OrderPolicy < ApplicationPolicy
   end
 
   def update?
-    user_is_owner? || user.admin?
+    user_is_owner? || user.role == "admin"
   end
 
   def destroy?
-    user_is_owner? || user.admin?
+    user_is_owner? || user.role == "admin"
   end
 
   private

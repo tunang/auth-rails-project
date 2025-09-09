@@ -1,7 +1,5 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type Author } from "@/types/author.type";
-import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
 import DeleteAuthorPopover from "./modal/delete-author-popover";
 import EditAuthorModal from "./modal/edit-author-modal";
 

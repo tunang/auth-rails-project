@@ -80,7 +80,7 @@ const CreateCategoryModal = () => {
 
   // Debounced search function
   const debouncedSearch = useCallback(
-    (() => {
+    (function() {
       let timeoutId: NodeJS.Timeout;
       return (searchTerm: string) => {
         clearTimeout(timeoutId);

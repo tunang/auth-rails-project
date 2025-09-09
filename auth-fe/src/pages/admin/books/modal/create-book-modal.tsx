@@ -28,13 +28,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useAppDispatch, useAppSelector } from "@/hooks/useAppDispatch";
 import { createBookRequest } from "@/store/slices/bookSlice";
 import { authorApi } from "@/services/author.api";
@@ -131,7 +125,7 @@ const CreateBookModal = () => {
   );
 
   const debouncedCategorySearch = useCallback(
-    (() => {
+    (function() {
       let timeoutId: NodeJS.Timeout;
       return (searchTerm: string) => {
         clearTimeout(timeoutId);
@@ -203,7 +197,7 @@ const CreateBookModal = () => {
       formData.append('cover_image', selectedCoverImage);
     }
 
-    selectedSamplePages.forEach((file, index) => {
+    selectedSamplePages.forEach((file) => {
       formData.append(`sample_pages[]`, file);
     });
 
@@ -294,8 +288,8 @@ const CreateBookModal = () => {
                               type="number"
                               placeholder="0"
                               className="pl-10"
-                              onChange={(e) => field.onChange(Number(e.target.value))}
                               {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
                             />
                           </div>
                         </FormControl>

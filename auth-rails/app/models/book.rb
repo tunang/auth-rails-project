@@ -64,6 +64,7 @@ class Book < ApplicationRecord
       categories: categories.map(&:name),
     }
   end
+
   def destroy_fully!
     cover_image.purge if cover_image.attached?
     sample_pages.purge if sample_pages.attached?

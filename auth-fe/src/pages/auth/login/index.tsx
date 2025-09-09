@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, ArrowLeft, Book, MailCheck, Lock } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, MailCheck, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,15 +14,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   loginSchema,
-  registerSchema,
   type LoginRequest,
 } from "@/schemas/auth.schema";
 import { useAppDispatch, useAppSelector } from "@/hooks/useAppDispatch";
-import { loginRequest, clearMessage } from "@/store/slices/authSlice";
+import { loginRequest } from "@/store/slices/authSlice";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,7 +28,6 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import type { RootState } from "@/store";
 
 const LoginPage = () => {
   const dispatch = useAppDispatch();

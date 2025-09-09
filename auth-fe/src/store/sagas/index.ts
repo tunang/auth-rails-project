@@ -3,6 +3,8 @@ import { authSaga } from "./authSaga";
 import { categorySaga } from "./categorySaga";
 import { authorSaga } from "./authorSaga";
 import { bookSaga } from "./bookSaga";
+import { watchOrderSaga } from "./orderSaga";
+import { watchCartSaga } from "./cartSaga";
 
 export function* rootSaga() {
   yield all([
@@ -10,5 +12,7 @@ export function* rootSaga() {
     categorySaga(),
     authorSaga(),
     bookSaga(),
+    watchOrderSaga(),
+    watchCartSaga(),
   ]);
 }

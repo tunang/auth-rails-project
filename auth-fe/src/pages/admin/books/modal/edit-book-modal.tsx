@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/useAppDispatch";
 import {
   bookSchema,
   type BookRequest,
+  type EditBookRequest,
 } from "@/schemas/book.schema";
 import { updateBookRequest } from "@/store/slices/bookSlice";
 import type { Book } from "@/types/book.type";
@@ -55,6 +56,7 @@ const EditBookModal = ({ book }: { book: Book }) => {
 
   const { isLoading } = useAppSelector((state) => state.book);
 
+  // Sử dụng EditBookRequest và editBookSchema để xử lý trường featured có thể undefined
   const form = useForm<BookRequest>({
     mode: "onTouched",
     resolver: zodResolver(bookSchema),
@@ -63,8 +65,8 @@ const EditBookModal = ({ book }: { book: Book }) => {
       description: book.description || "",
       price: book.price,
       stock_quantity: book.stock_quantity,
-      featured: book.featured,
-      discount_percentage: book.discount_percentage,
+      featured: book.featured, // featured đã là boolean trong Book type
+      discount_percentage: book.discount_percentage || 0,
       author_ids: book.authors?.map(author => author.id) || [],
       category_ids: book.categories?.map(category => category.id) || [],
     },
@@ -110,7 +112,7 @@ const EditBookModal = ({ book }: { book: Book }) => {
 
   // Debounced search functions
   const debouncedAuthorSearch = useCallback(
-    (() => {
+    (function() {
       let timeoutId: NodeJS.Timeout;
       return (searchTerm: string) => {
         clearTimeout(timeoutId);
@@ -123,7 +125,7 @@ const EditBookModal = ({ book }: { book: Book }) => {
   );
 
   const debouncedCategorySearch = useCallback(
-    (() => {
+    (function() {
       let timeoutId: NodeJS.Timeout;
       return (searchTerm: string) => {
         clearTimeout(timeoutId);
@@ -175,8 +177,8 @@ const EditBookModal = ({ book }: { book: Book }) => {
       description: book.description || "",
       price: book.price,
       stock_quantity: book.stock_quantity,
-      featured: book.featured,
-      discount_percentage: book.discount_percentage,
+      featured: book.featured, // featured đã là boolean trong Book type
+      discount_percentage: book.discount_percentage || 0,
       author_ids: book.authors?.map(author => author.id) || [],
       category_ids: book.categories?.map(category => category.id) || [],
     });
@@ -209,7 +211,7 @@ const EditBookModal = ({ book }: { book: Book }) => {
     setSamplePagesPreview(previews);
   };
 
-  const onSubmit = async (data: BookRequest) => {
+  const onSubmit = async (data: EditBookRequest) => {
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('description', data.description || '');
@@ -232,7 +234,7 @@ const EditBookModal = ({ book }: { book: Book }) => {
       formData.append('cover_image', selectedCoverImage);
     }
 
-    selectedSamplePages.forEach((file, index) => {
+    selectedSamplePages.forEach((file) => {
       formData.append(`sample_pages[]`, file);
     });
 

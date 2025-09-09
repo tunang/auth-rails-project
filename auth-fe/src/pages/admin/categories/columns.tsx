@@ -1,13 +1,5 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type Category } from "@/types/category.type";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash, X } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { PopoverClose } from "@radix-ui/react-popover";
 import DeleteCategoryPopoer from "./modal/delete-category-popoer";
 import EditCategoryModal from "./modal/edit-category-modal";
 

@@ -48,6 +48,8 @@ Rails
           post 'categories/:id/restore', to: 'categories#restore'
 
           get 'orders/get_all', to: 'orders#get_all'
+          patch 'orders/:id', to: 'orders#update'
+          get 'orders/:id', to: 'orders#show'
         end
 
         scope :user do
@@ -61,6 +63,7 @@ Rails
           # /user/addresses route
           resources :addresses
 
+          # /user/orders route
           resources :orders
 
           # /user/cart route

@@ -70,3 +70,10 @@ export type PaginationParams = {
   per_page?: number;
   search?: string;
 };
+
+export * from './author.type';
+export * from './book.type';
+export * from './category.type';
+export * from './cart.type';
+export * from './order.type';
+export * from './user.type';

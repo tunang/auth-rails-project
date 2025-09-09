@@ -1,5 +1,4 @@
 import { Provider } from "react-redux";
-import { Toaster } from "sonner";
 import AppRoutes from "./routes";
 import { store } from "./store";
 

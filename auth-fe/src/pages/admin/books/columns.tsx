@@ -1,8 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type Book } from "@/types/book.type";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil } from "lucide-react";
 import DeleteBookPopover from "./modal/delete-book-popover";
 import EditBookModal from "./modal/edit-book-modal";
 

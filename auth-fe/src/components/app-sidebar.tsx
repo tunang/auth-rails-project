@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Calendar, Crown, Home, Inbox, Search, Settings, ShoppingCart, Tags } from "lucide-react"
+import { BookOpen, Crown, ShoppingCartIcon, Tags } from "lucide-react"
 
 import {
   Sidebar,
@@ -13,18 +13,7 @@ import {
 import { Link } from "react-router-dom";
 
 // Menu items grouped by functionality
-const dashboardItems = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Analytics",
-    url: "/admin/analytics", 
-    icon: BarChart3,
-  },
-];
+
 
 const managementItems = [
   // {
@@ -48,23 +37,16 @@ const managementItems = [
     url: "/admin/categories",
     icon: Tags,
   },
-];
-
-const orderItems = [
   {
     title: "Orders",
     url: "/admin/orders",
-    icon: ShoppingCart,
+    icon: ShoppingCartIcon,
   },
 ];
 
-const settingsItems = [
-  {
-    title: "Settings",
-    url: "/admin/settings",
-    icon: Settings,
-  },
-];
+
+
+
 
 export function AppSidebar() {
   return (

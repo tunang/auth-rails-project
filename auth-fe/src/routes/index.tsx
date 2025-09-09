@@ -13,6 +13,8 @@ import { Role } from "@/types";
 import BooksPage from "@/pages/admin/books/page";
 import CategoriesPage from "@/pages/admin/categories/page";
 import AuthorsPage from "@/pages/admin/authors/page";
+import OrdersPage from "@/pages/admin/orders/page";
+import CartPage from "@/pages/cart/page";
 // import Books from "@/pages/admin/books";
 // import Categories from "@/pages/admin/categories";
 // import Authors from "@/pages/admin/authors";
@@ -55,14 +57,14 @@ const router = createBrowserRouter([
       //   path: 'books/:id',
       //   element: <BookDetail />,
       // },
-      // {
-      //   path: 'cart',
-      //   element: (
-      //     <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
-      //       <Cart />
-      //     </ProtectedRoute>
-      //   ),
-      // },
+      {
+        path: 'cart',
+        element: (
+          <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+            <CartPage />
+          </ProtectedRoute>
+        ),
+      },
       // {
       //   path: 'address',
       //   element: (
@@ -151,10 +153,10 @@ const router = createBrowserRouter([
         path: 'authors',
         element: <AuthorsPage />
       },
-      // {
-      //   path: 'orders',
-      //   element: <Orders />
-      // }
+      {
+        path: 'orders',
+        element: <OrdersPage />
+      }
     ]
   }
 ]);

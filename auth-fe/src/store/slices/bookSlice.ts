@@ -1,4 +1,4 @@
-import type { BookRequest } from "@/schemas/book.schema";
+
 import type { ListResponse, Pagination, SingleResponse, PaginationParams } from "@/types";
 import type { Book } from "@/types/book.type";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";

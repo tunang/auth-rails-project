@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom"; // chỉ Link từ react-router-dom
-import { Eye, EyeOff, ArrowLeft, Book, Lock, User, Mail, MailCheck } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Lock, User, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,11 +14,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterRequest } from "@/schemas/auth.schema";
 import { useAppDispatch, useAppSelector } from "@/hooks/useAppDispatch";
-import { registerRequest, clearMessage, resendConfirmationFailure, resendConfirmationRequest } from "@/store/slices/authSlice";
+import { registerRequest, clearMessage, resendConfirmationRequest } from "@/store/slices/authSlice";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,

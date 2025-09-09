@@ -1,44 +1,43 @@
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { useDispatch, useSelector } from "react-redux";
-import { getCategoriesRequest, setPerPage } from "@/store/slices/categorySlice";
+import { getOrdersRequest, setPerPage } from "@/store/slices/orderSlice";
 import React, { useCallback, useEffect, useState } from "react";
 import type { RootState } from "@/store";
 import { toast } from "sonner";
-import CreateCategoryModal from "./modal/create-category-modal";
 import { Button } from "@/components/ui/button";
-import { Filter, Search, Trash2 } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-const CategoriesPage = () => {
-  const header = "Danh mục";
+const OrdersPage = () => {
+  const header = "Đơn hàng";
   const dispatch = useDispatch();
   const [searchParam, setSearchParam] = React.useState("");
   const [searchInput, setSearchInput] = useState(searchParam);
 
   const {
-    categories: data,
+    orders: data,
     pagination,
     message,
     perPage,
-  } = useSelector((state: RootState) => state.category);
+  } = useSelector((state: RootState) => state.order);
 
   useEffect(() => {
     dispatch(
-      getCategoriesRequest({ page: 1, per_page: perPage, search: searchParam })
+      getOrdersRequest({ page: 1, per_page: perPage, search: searchParam })
     );
   }, [dispatch, perPage, searchParam]);
 
   const handlePageChange = (page: number) => {
     dispatch(
-      getCategoriesRequest({ page, per_page: perPage, search: searchParam })
+      getOrdersRequest({ page, per_page: perPage, search: searchParam })
     );
   };
 
   const handlePerPageChange = (newPerPage: number) => {
     dispatch(setPerPage(newPerPage));
     dispatch(
-      getCategoriesRequest({
+      getOrdersRequest({
         page: 1,
         per_page: newPerPage,
         search: searchParam,
@@ -48,28 +47,20 @@ const CategoriesPage = () => {
 
   const handleSearchParamChange = (search: string) => {
     setSearchParam(search);
-    dispatch(getCategoriesRequest({ page: 1, per_page: perPage, search }));
+    dispatch(getOrdersRequest({ page: 1, per_page: perPage, search }));
   };
 
   React.useEffect(() => {
-    if (message === "category_created_successfully") {
-      toast.success("Thêm danh mục thành công");
+    if (message === "order_status_updated_successfully") {
+      toast.success("Cập nhật trạng thái đơn hàng thành công");
     }
 
-    if (message === "category_updated_successfully") {
-      toast.success("Cập nhật danh mục thành công");
-    }
-
-    if (message === "category_deleted_successfully") {
-      toast.success("Xóa danh mục thành công");
+    if (message === "update_order_status_failure") {
+      toast.error("Cập nhật trạng thái đơn hàng thất bại");
     }
 
     if (message === "validation_error") {
-      toast.error("Thêm danh mục thất bại, tên danh mục đã tồn tại");
-    }
-
-    if (message === "update_category_failure") {
-      toast.error("Cập nhật danh mục thất bại");
+      toast.error("Dữ liệu không hợp lệ, vui lòng kiểm tra lại");
     }
   }, [message]);
 
@@ -87,34 +78,29 @@ const CategoriesPage = () => {
     [handleSearchParamChange]
   );
 
-
   return (
     <div className="container mx-auto pt-4">
       <div>
         <div>
           <div className="flex justify-between items-center border-b border-gray-200 gap-4 pb-2">
             <h1 className="text-2xl font-bold">{header}</h1>
-            <div className="flex gap-2">
-              <CreateCategoryModal />
-              <Button>
-                <Trash2 /> Recycle Bin
-              </Button>
-            </div>
+            {/* No create/delete buttons for orders as admin can only view and update status */}
           </div>
 
           <div className="flex justify-between py-4">
             <div className="flex gap-2">
               <Input
-                placeholder="Search categories..."
+                placeholder="Tìm kiếm đơn hàng (theo mã đơn, tên khách hàng)..."
                 value={searchInput}
                 onChange={(e) => {
                   const value = e.target.value;
                   setSearchInput(value);
                   debouncedSearch(value);
                 }}
+                className="w-80"
               />
               <Button>
-                <Search /> Search
+                <Search /> Tìm kiếm
               </Button>
             </div>
 
@@ -126,7 +112,7 @@ const CategoriesPage = () => {
         <DataTable
           columns={columns}
           data={data}
-          header="Categories"
+          header="Orders"
           pagination={pagination}
           perPage={perPage}
           searchParam={searchParam}
@@ -138,4 +124,4 @@ const CategoriesPage = () => {
   );
 };
 
-export default CategoriesPage;
+export default OrdersPage;

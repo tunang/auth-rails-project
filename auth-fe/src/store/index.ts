@@ -5,6 +5,8 @@ import { rootSaga } from './sagas';
 import categoryReducer from './slices/categorySlice';
 import authorReducer from './slices/authorSlice';
 import bookReducer from './slices/bookSlice';
+import orderReducer from './slices/orderSlice';
+import cartReducer from './slices/cartSlice';
 
 // Create saga middleware
 const sagaMiddleware = createSagaMiddleware();
@@ -16,6 +18,8 @@ export const store = configureStore({
     category: categoryReducer,
     author: authorReducer,
     book: bookReducer,
+    order: orderReducer,
+    cart: cartReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
