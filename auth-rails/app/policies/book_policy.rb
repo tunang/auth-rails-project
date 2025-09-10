@@ -1,22 +1,25 @@
 class BookPolicy < ApplicationPolicy
   def index?
-    user.role == "admin"
+    user.role == 'admin'
   end
 
   def show?
-    user.role == "admin"
+    user.role == 'admin'
   end
 
   def create?
-    user.role == "admin"
+    user.role == 'admin'
   end
 
   def update?
-    user.role == "admin"
+    user.role == 'admin'
   end
 
   def destroy?
-    user.role == "admin"
+    user.role == 'admin'
   end
-  
+
+  def deleted?
+    user.role == 'admin'
+  end
 end

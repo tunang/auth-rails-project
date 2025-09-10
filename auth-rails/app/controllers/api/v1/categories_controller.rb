@@ -1,6 +1,6 @@
 class Api::V1::CategoriesController < ApplicationController
   # before_action :doorkeeper_authorize!, except: %i[index show]
-  before_action :doorkeeper_authorize!
+  before_action :doorkeeper_authorize!, except: %i[get_nested_category]
   before_action :set_category, only: %i[show update destroy]
 
   def index
@@ -52,7 +52,7 @@ end
 
 
   def get_nested_category
-    authorize :category, :get_nested_category?
+    # authorize :category, :get_nested_category?
 
     categories = Category.all()
     render json: {

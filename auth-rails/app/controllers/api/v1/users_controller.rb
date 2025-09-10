@@ -1,6 +1,11 @@
 class Api::V1::UsersController < ApplicationController
   before_action :doorkeeper_authorize!
 
+  def index
+    
+  end
+
+
   def me
     render json: {
              status: {

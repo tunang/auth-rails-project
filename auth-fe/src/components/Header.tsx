@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,20 +10,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useAppSelector } from "@/hooks/useAppDispatch";
 import { ListOrderedIcon, LogOutIcon, MapPinIcon, ShieldIcon, UserIcon } from "lucide-react";
+import { categoryApi } from "@/services/category.api";
+import type { Category } from "@/types/category.type";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const navigate = useNavigate();
 
   const {user, isAuthenticated} = useAppSelector((state) => state.auth);
-
-  // Mock data - sẽ được thay thế bằng state management thực tế
-  const cartItemCount = 3;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,13 +32,46 @@ const Header = () => {
     }
   };
 
-  const categories = [
-    { name: "Sách trong nước", count: "12,000+" },
-    { name: "Sách nước ngoài", count: "8,000+" },
-    { name: "VPP - Dụng cụ học tập", count: "3,000+" },
-    { name: "Quà lưu niệm", count: "500+" },
-    { name: "Sách điện tử", count: "2,000+" },
-  ];
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const response = await categoryApi.user.getCategories();
+        console.log("Categories API response:", response);
+        console.log("Categories data:", response.data);
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+
+  // Component để render danh mục con
+  const renderSubCategories = (children: Category[] | null | undefined) => {
+    if (!children || !Array.isArray(children) || children.length === 0) return null;
+    
+    return (
+      <div className="ml-4 border-l border-gray-200 pl-3 mt-2">
+        {children.map((child) => (
+          <div key={child.id} className="mb-2">
+            <Link 
+              to={`/category/${child.id}`}
+              className="block text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+            >
+              {child.name}
+            </Link>
+            {child.children && Array.isArray(child.children) && child.children.length > 0 && renderSubCategories(child.children)}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
 
 
@@ -97,15 +130,34 @@ const Header = () => {
                   </svg>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" align="start">
-                {categories.map((category, index) => (
-                  <DropdownMenuItem key={index} asChild>
-                    <Link to={`/category/${index + 1}`} className="flex justify-between">
-                      <span>{category.name}</span>
-                      <span className="text-gray-400 text-xs">({category.count})</span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
+              <DropdownMenuContent className="w-80 max-h-96 overflow-y-auto" align="start">
+                {isLoadingCategories ? (
+                  <div className="p-4 text-center text-gray-500">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
+                    <p className="mt-2 text-sm">Đang tải danh mục...</p>
+                  </div>
+                ) : categories.length > 0 ? (
+                  categories.map((category) => (
+                    <div key={category.id} className="p-2">
+                      <DropdownMenuItem asChild>
+                        <Link 
+                          to={`/category/${category.id}`}
+                          className="flex justify-between font-medium text-gray-800 hover:text-red-600"
+                        >
+                        <span>{category.name}</span>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                      </Link>
+                    </DropdownMenuItem>
+                      {renderSubCategories(category.children)}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-500">
+                    <p className="text-sm">Không có danh mục nào</p>
+                  </div>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -155,11 +207,7 @@ const Header = () => {
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z" />
                 </svg>
                 <span className="hidden lg:inline-block text-sm">Giỏ hàng</span>
-                {cartItemCount > 0 && (
-                  <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500">
-                    {cartItemCount}
-                  </Badge>
-                )}
+         
               </Button>
             </Link>
 
@@ -268,16 +316,62 @@ const Header = () => {
               <div className="mb-4 px-2">
                 <h3 className="font-semibold text-gray-800 mb-3">Danh mục sản phẩm</h3>
                 <div className="grid grid-cols-1 gap-1">
-                  {categories.map((category, index) => (
-                    <Link
-                      key={index}
-                      to={`/category/${index + 1}`}
-                      className="text-sm text-gray-600 py-2 px-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
+                  {isLoadingCategories ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
+                      <p className="mt-2 text-sm">Đang tải danh mục...</p>
+                    </div>
+                  ) : categories.length > 0 ? (
+                    categories.map((category) => (
+                      <div key={category.id} className="mb-2">
+                      <Link
+                          to={`/category/${category.id}`}
+                          className="text-sm font-medium text-gray-800 py-2 px-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors flex justify-between items-center"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {category.name}
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                        {/* Mobile Sub Categories */}
+                        {category.children && Array.isArray(category.children) && category.children.length > 0 && (
+                          <div className="ml-4 mt-1">
+                            {category.children.map((child) => (
+                              <div key={child.id} className="mb-1">
+                                <Link
+                                  to={`/category/${child.id}`}
+                                  className="text-xs text-gray-600 py-1 px-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors block"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                  • {child.name}
+                                </Link>
+                                {/* Third level categories */}
+                                {child.children && Array.isArray(child.children) && child.children.length > 0 && (
+                                  <div className="ml-4 mt-1">
+                                    {child.children.map((grandChild) => (
+                                      <Link
+                                        key={grandChild.id}
+                                        to={`/category/${grandChild.id}`}
+                                        className="text-xs text-gray-500 py-1 px-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors block"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                      >
+                                        ◦ {grandChild.name}
+                      </Link>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      <p className="text-sm">Không có danh mục nào</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

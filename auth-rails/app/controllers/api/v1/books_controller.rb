@@ -3,46 +3,100 @@ class Api::V1::BooksController < ApplicationController
   before_action :doorkeeper_authorize!
   before_action :book_job, only: %i[show update destroy]
 
-def index
-  authorize Book, :index?
+  def index
+    authorize Book, :index?
 
-  if params[:search].present?
-    # 🔎 Search với Elasticsearch
-    books = Book.search_by_name(params[:search])
-                .page(params[:page] || 1)
-                .per(params[:per_page] || 5)
-  else
-    # 📚 Lấy từ DB bình thường
-    books = Book.includes(
-      :authors,
-      :categories,
-      cover_image_attachment: :blob,
-      sample_pages_attachments: :blob
-    ).page(params[:page] || 1)
-     .per(params[:per_page] || 5)
+    if params[:search].present?
+      # 🔎 Search với Elasticsearch
+      books =
+        Book
+          .search_by_name(params[:search])
+          .page(params[:page] || 1)
+          .per(params[:per_page] || 5)
+    else
+      # 📚 Lấy từ DB bình thường
+      books =
+        Book
+          .includes(
+            :authors,
+            :categories,
+            cover_image_attachment: :blob,
+            sample_pages_attachments: :blob,
+          )
+          .page(params[:page] || 1)
+          .per(params[:per_page] || 5)
+    end
+
+    render json: {
+             status: {
+               code: 200,
+               message: 'Fetched books successfully',
+             },
+             data: books.map { |book| BookSerializer.new(book).as_json },
+             pagination: {
+               current_page: books.current_page,
+               next_page: books.next_page,
+               prev_page: books.prev_page,
+               total_pages: books.total_pages,
+               total_count: books.total_count,
+             },
+           },
+           status: :ok
   end
 
-  render json: {
-           status: {
-             code: 200,
-             message: "Fetched books successfully",
+  def category
+    category = Category.find(params[:category_id] || params[:id])
+    books =
+      category
+        .books
+        .includes(
+          :authors,
+          :categories,
+          cover_image_attachment: :blob,
+          sample_pages_attachments: :blob,
+        )
+        .page(params[:page] || 1)
+        .per(params[:per_page] || 5)
+
+    render json: {
+             status: {
+               code: 200,
+               message: 'Fetched books successfully',
+             },
+             data: books.map { |book| BookSerializer.new(book).as_json },
+             pagination: {
+               current_page: books.current_page,
+               next_page: books.next_page,
+               prev_page: books.prev_page,
+               total_pages: books.total_pages,
+               total_count: books.total_count,
+             },
            },
-           data: books.map { |book| BookSerializer.new(book).as_json },
-           pagination: {
-             current_page: books.current_page,
-             next_page: books.next_page,
-             prev_page: books.prev_page,
-             total_pages: books.total_pages,
-             total_count: books.total_count,
+           status: :ok
+  end
+
+  def deleted
+    authorize Book, :deleted?
+
+    deleted_books =
+      Book.only_deleted.page(params[:page]).per(params[:per_page] || 10)
+
+    render json: {
+             status: {
+               code: 200,
+               message: 'Fetched deleted books successfully',
+             },
+             data:
+               deleted_books.map { |book| BookSerializer.new(book).as_json },
+             pagination: {
+               current_page: deleted_books.current_page,
+               next_page: deleted_books.next_page,
+               prev_page: deleted_books.prev_page,
+               total_pages: deleted_books.total_pages,
+               total_count: deleted_books.total_count,
+             },
            },
-         },
-         status: :ok
-end
-
-
-
-  def featured
-  
+           status: :ok
   end
 
   def search

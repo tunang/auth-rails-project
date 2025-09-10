@@ -46,18 +46,30 @@ const bookSlice = createSlice({
       state.message = action.payload;
     },
 
+    getBooksByCategoryRequest: (state, _action: PayloadAction<{ categoryId: number; params: PaginationParams }>) => {
+      state.isLoading = true;
+      state.message = null;
+    },
+    getBooksByCategorySuccess: (state, action: PayloadAction<ListResponse<Book>>) => {
+      state.isLoading = false;
+      state.books = action.payload.data;
+      state.pagination = action.payload.pagination ?? state.pagination;
+    },
+    getBooksByCategoryFailure: (state, action: PayloadAction<string>) => {
+      state.isLoading = false;
+      state.message = action.payload;
+    },
+
     createBookRequest: (state, _action: PayloadAction<FormData>) => {
       state.isLoading = true;
       state.message = null;
     },
     createBookSuccess: (state, action: PayloadAction<SingleResponse<Book>>) => {
-      console.log(action.payload);
       state.isLoading = false;
       state.books.push(action.payload.data as Book);
       state.message = action.payload.status.message;
     },
     createBookFailure: (state, action: PayloadAction<string>) => {
-      console.log(action.payload);
       state.isLoading = false;
       state.message = action.payload;
     },
@@ -68,7 +80,6 @@ const bookSlice = createSlice({
     },
     updateBookSuccess: (state, action: PayloadAction<SingleResponse<Book>>) => {
       state.isLoading = false;
-      console.log(action.payload);
       state.books = state.books.map((book) =>
         book.id === action.payload.data?.id ? action.payload.data as Book : book
       );
@@ -107,6 +118,9 @@ export const {
   getBooksRequest,
   getBooksSuccess,
   getBooksFailure,
+  getBooksByCategoryRequest,
+  getBooksByCategorySuccess,
+  getBooksByCategoryFailure,
   createBookRequest,
   createBookSuccess,
   createBookFailure,

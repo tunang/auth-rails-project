@@ -3,6 +3,7 @@ export type Book = {
     title: string
     description: string | null
     price: number
+    cost_price: number
     discount_percentage: number
     stock_quantity: number
     featured: boolean

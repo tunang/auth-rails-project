@@ -55,6 +55,14 @@ class Book < ApplicationRecord
     ).records
   end
 
+
+
+  def self.search_by_category(query)
+    __elasticsearch__.search(
+      { query: { match_phrase_prefix: { categories: query } } },
+    ).records
+  end
+
   def as_indexed_json(_options = {})
     {
       title: title,

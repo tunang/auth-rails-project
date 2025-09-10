@@ -43,8 +43,10 @@ Rails
           resources :categories
 
           resources :books
-          
+
+          get 'books/deleted/list', to: 'books#deleted'
           post 'books/:id/restore', to: 'books#restore'
+
           post 'categories/:id/restore', to: 'categories#restore'
 
           get 'orders/get_all', to: 'orders#get_all'
@@ -58,6 +60,7 @@ Rails
               to: 'categories#get_nested_category'
 
           # /user/books
+          get '/categories/:id/products', to: 'books#category'
           get '/books/search', to: 'books#search'
 
           # /user/addresses route

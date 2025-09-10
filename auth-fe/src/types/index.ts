@@ -71,6 +71,7 @@ export type PaginationParams = {
   search?: string;
 };
 
+export * from './address.type';
 export * from './author.type';
 export * from './book.type';
 export * from './category.type';

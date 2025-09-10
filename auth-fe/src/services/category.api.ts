@@ -28,4 +28,11 @@ export const categoryApi = {
       return response.data;
     },
   },
+
+  user: {
+    getCategories: async (): Promise<ListResponse<Category>> => {
+      const response = await api.get("/user/categories/get_nested_category");
+      return response.data;
+    },
+  },
 };

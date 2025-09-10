@@ -15,13 +15,14 @@ import CategoriesPage from "@/pages/admin/categories/page";
 import AuthorsPage from "@/pages/admin/authors/page";
 import OrdersPage from "@/pages/admin/orders/page";
 import CartPage from "@/pages/cart/page";
+import AddressPage from "@/pages/address/page";
 // import Books from "@/pages/admin/books";
 // import Categories from "@/pages/admin/categories";
 // import Authors from "@/pages/admin/authors";
 // import Orders from "@/pages/admin/orders";
 // import Analytics from "@/pages/admin/analytics";
 // import CategoryPage from "@/pages/category";
-// import CategoryProductPage from "@/pages/category/CategoryProducts";
+import CategoryProductPage from "@/pages/cate/CategoryProductPage";
 // import SearchResults from "@/pages/search/SearchResults";
 // import BookDetail from "@/pages/books/BookDetail";
 // import Cart from "@/pages/cart";
@@ -45,10 +46,10 @@ const router = createBrowserRouter([
       //   path: 'category',
       //   element: <CategoryPage  />,
       // },
-      // {
-      //   path: 'category/:id',
-      //   element: <CategoryProductPage />,
-      // },
+      {
+        path: 'category/:id',
+        element: <CategoryProductPage />,
+      },
       // {
       //   path: 'search',
       //   element: <SearchResults />,
@@ -62,6 +63,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
             <CartPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'address',
+        element: (
+          <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+            <AddressPage />
           </ProtectedRoute>
         ),
       },

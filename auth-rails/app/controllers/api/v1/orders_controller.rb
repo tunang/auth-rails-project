@@ -33,13 +33,25 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def get_all
-    orders =
-      Order
-        .includes(:books, :user, :shipping_address)
-        .page(params[:page] || 1)
-        .per(params[:per_page] || 5)
-
     authorize Order, :get_all?
+    
+    if params[:search].present?
+      # Use elasticsearch
+      orders =
+        Order
+          .search_by_name(params[:search])
+          .page(params[:page] || 1)
+          .per(params[:per_page] || 10)
+    else
+      # Use normal AR
+      orders = Order.page(params[:page] || 1).per(params[:per_page] || 10)
+    end
+
+    # orders =
+    #   Order
+    #     .includes(:books, :user, :shipping_address)
+    #     .page(params[:page] || 1)
+    #     .per(params[:per_page] || 5)
 
     render json: {
              status: {
@@ -118,7 +130,8 @@ class Api::V1::OrdersController < ApplicationController
 
       # Append tax & shipping line items
       line_items << build_line_item(name: 'Tax (10%)', unit_amount: tax_amount)
-      line_items << build_line_item(name: 'Shipping', unit_amount: shipping_cost)
+      line_items <<
+        build_line_item(name: 'Shipping', unit_amount: shipping_cost)
 
       # Tạo checkout session Stripe
       session =
