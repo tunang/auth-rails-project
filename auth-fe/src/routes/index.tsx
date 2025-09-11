@@ -16,6 +16,11 @@ import AuthorsPage from "@/pages/admin/authors/page";
 import OrdersPage from "@/pages/admin/orders/page";
 import CartPage from "@/pages/cart/page";
 import AddressPage from "@/pages/address/page";
+import CheckoutPage from "@/pages/checkout";
+import CheckoutSuccessPage from "@/pages/checkout/success";
+import CheckoutCancelPage from "@/pages/checkout/cancel";
+import UserOrdersPage from "@/pages/orders";
+import UserOrderDetailPage from "@/pages/orders/detail";
 // import Books from "@/pages/admin/books";
 // import Categories from "@/pages/admin/categories";
 // import Authors from "@/pages/admin/authors";
@@ -23,6 +28,7 @@ import AddressPage from "@/pages/address/page";
 // import Analytics from "@/pages/admin/analytics";
 // import CategoryPage from "@/pages/category";
 import CategoryProductPage from "@/pages/cate/CategoryProductPage";
+import BookDetailPage from "@/pages/books/Page";
 // import SearchResults from "@/pages/search/SearchResults";
 // import BookDetail from "@/pages/books/BookDetail";
 // import Cart from "@/pages/cart";
@@ -54,10 +60,10 @@ const router = createBrowserRouter([
       //   path: 'search',
       //   element: <SearchResults />,
       // },
-      // {
-      //   path: 'books/:id',
-      //   element: <BookDetail />,
-      // },
+      {
+        path: 'book/:id',
+        element: <BookDetailPage />,
+      },
       {
         path: 'cart',
         element: (
@@ -82,38 +88,46 @@ const router = createBrowserRouter([
       //     </ProtectedRoute>
       //   ),
       // },
-      // {
-      //   path: 'checkout',
-      //   element: (
-      //     <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
-      //       <Checkout />
-      //     </ProtectedRoute>
-      //   ),
-      // },
-      // {
-      //   path: 'checkout/success',
-      //   element: (
-      //     <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
-      //       <PaymentSuccessPage />
-      //     </ProtectedRoute>
-      //   ),
-      // },
-      // {
-      //   path: 'checkout/cancel',
-      //   element: (
-      //     <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
-      //       <PaymentCancelPage />
-      //     </ProtectedRoute>
-      //   ),
-      // },
-      // {
-      //   path: 'orders',
-      //   element: (
-      //     <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
-      //       <OrderPage />
-      //     </ProtectedRoute>
-      //   ),
-      // }
+      {
+        path: 'checkout',
+        element: (
+          <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'checkout/success',
+        element: (
+          <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+            <CheckoutSuccessPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'checkout/cancel',
+        element: (
+          <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+            <CheckoutCancelPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'orders',
+        element: (
+          <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+            <UserOrdersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'orders/:id',
+        element: (
+          <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+            <UserOrderDetailPage />
+          </ProtectedRoute>
+        ),
+      }
 
     ],
   },

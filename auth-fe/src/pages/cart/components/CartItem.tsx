@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useDispatch } from "react-redux";
-import { updateCartItemRequest, removeFromCartRequest } from "@/store/slices/cartSlice";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useDispatch, useSelector } from "react-redux";
+import { updateCartItemRequest, removeFromCartRequest, toggleItemSelection } from "@/store/slices/cartSlice";
 import type { CartItem as CartItemType } from "@/types/cart.type";
+import type { RootState } from "@/store";
 
 interface CartItemProps {
   item: CartItemType;
@@ -17,7 +19,9 @@ const CartItem = ({ item }: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const { selectedItems } = useSelector((state: RootState) => state.cart);
   const { book } = item;
+  const isSelected = selectedItems.includes(book.id);
   const price = parseFloat(book.price);
   const discountPercentage = parseFloat(book.discount_percentage);
   const discountedPrice = price * (1 - discountPercentage / 100);
@@ -40,10 +44,22 @@ const CartItem = ({ item }: CartItemProps) => {
     dispatch(removeFromCartRequest({ book_id: book.id }));
   };
 
+  const handleToggleSelection = () => {
+    dispatch(toggleItemSelection(book.id));
+  };
+
   return (
-    <Card className="mb-4">
+    <Card className={`mb-4 transition-colors ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
       <CardContent className="p-4">
         <div className="flex gap-4">
+          {/* Checkbox */}
+          <div className="flex-shrink-0 pt-2">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={handleToggleSelection}
+            />
+          </div>
+
           {/* Book Image */}
           <div className="flex-shrink-0">
             <img

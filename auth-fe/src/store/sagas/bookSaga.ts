@@ -14,7 +14,10 @@ import {
   updateBookRequest, 
   getBooksByCategorySuccess,
   getBooksByCategoryFailure,
-  getBooksByCategoryRequest
+  getBooksByCategoryRequest,
+  getBookDetailRequest,
+  getBookDetailSuccess,
+  getBookDetailFailure
 } from "../slices/bookSlice";
 import { bookApi } from "@/services/book.api";
 import type { ListResponse, SingleResponse, PaginationParams } from "@/types";
@@ -69,10 +72,20 @@ export function* deleteBookSaga(action: PayloadAction<number>) {
     }
 }
 
+export function* getBookDetailSaga(action: PayloadAction<number | string>) {
+    try {
+        const response: SingleResponse<Book> = yield call(bookApi.user.getBookDetail, action.payload);
+        yield put(getBookDetailSuccess(response));
+    } catch (error: SingleResponse<null> | any) {
+        yield put(getBookDetailFailure(error.response?.data?.status?.message || error.message));
+    }
+}
+
 export function* bookSaga() {
     yield takeLatest(getBooksRequest.type, getBooksSaga);
     yield takeLatest(createBookRequest.type, createBookSaga);
     yield takeLatest(updateBookRequest.type, updateBookSaga);
     yield takeLatest(deleteBookRequest.type, deleteBookSaga);
     yield takeLatest(getBooksByCategoryRequest.type, getBooksByCategorySaga);
+    yield takeLatest(getBookDetailRequest.type, getBookDetailSaga);
 }

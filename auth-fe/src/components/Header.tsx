@@ -21,9 +21,13 @@ const Header = () => {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const {user, isAuthenticated} = useAppSelector((state) => state.auth);
+
+  // Debug logging (can be removed in production)
+  console.log("Header render - categories count:", categories?.length);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,12 +41,17 @@ const Header = () => {
     const fetchCategories = async () => {
       try {
         setIsLoadingCategories(true);
+        setCategoriesError(null);
         const response = await categoryApi.user.getCategories();
-        console.log("Categories API response:", response);
-        console.log("Categories data:", response.data);
-        setCategories(response.data);
+        console.log("Categories fetched successfully:", response.categories?.length, "items");
+        
+        // Ensure we set an array, fallback to empty array if data is not array
+        const categoriesData = Array.isArray(response.categories) ? response.categories : [];
+        setCategories(categoriesData);
       } catch (error) {
         console.error("Error fetching categories:", error);
+        setCategoriesError(error instanceof Error ? error.message : "Unknown error");
+        setCategories([]); // Set empty array on error
       } finally {
         setIsLoadingCategories(false);
       }
@@ -136,7 +145,17 @@ const Header = () => {
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
                     <p className="mt-2 text-sm">Đang tải danh mục...</p>
                   </div>
-                ) : categories.length > 0 ? (
+                ) : categoriesError ? (
+                  <div className="p-4 text-center text-red-500">
+                    <p className="text-sm">Lỗi tải danh mục: {categoriesError}</p>
+                    <button 
+                      onClick={() => window.location.reload()} 
+                      className="mt-2 text-xs text-blue-600 underline"
+                    >
+                      Thử lại
+                    </button>
+                  </div>
+                ) : categories && categories.length > 0 ? (
                   categories.map((category) => (
                     <div key={category.id} className="p-2">
                       <DropdownMenuItem asChild>
@@ -321,7 +340,17 @@ const Header = () => {
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
                       <p className="mt-2 text-sm">Đang tải danh mục...</p>
                     </div>
-                  ) : categories.length > 0 ? (
+                  ) : categoriesError ? (
+                    <div className="p-4 text-center text-red-500">
+                      <p className="text-sm">Lỗi tải danh mục: {categoriesError}</p>
+                      <button 
+                        onClick={() => window.location.reload()} 
+                        className="mt-2 text-xs text-blue-600 underline"
+                      >
+                        Thử lại
+                      </button>
+                    </div>
+                  ) : categories && categories.length > 0 ? (
                     categories.map((category) => (
                       <div key={category.id} className="mb-2">
                       <Link

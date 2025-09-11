@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import {  useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,17 +16,7 @@ interface Category {
   children: Category[];
 }
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  reviewCount: number;
-  discount?: number;
-}
+
 
 const CategoryProductPage = () => {
   const dispatch = useDispatch();
@@ -34,10 +24,10 @@ const CategoryProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const [category, setCategory] = useState<Category | null>(null);
   const { books, isLoading } = useSelector((state: RootState) => state.book);
-
+  const navigate = useNavigate(); 
  
   useEffect(() => {
-    dispatch(getBooksByCategoryRequest({ categoryId: id, params: { page: 1, per_page: 10 } }));
+    dispatch(getBooksByCategoryRequest({ categoryId: Number(id), params: { page: 1, per_page: 10 } }));
   }, [id]);
 
   const formatPrice = (price: number) => {
@@ -66,7 +56,7 @@ const CategoryProductPage = () => {
     );
   }
 
-  if (!category) {
+  if (!books) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Danh mục không tồn tại</h1>
@@ -78,7 +68,7 @@ const CategoryProductPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Category Header */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">{category.name}</h1>
         <p className="text-gray-600 text-lg">{category.description}</p>
         <div className="flex items-center mt-4">
@@ -89,10 +79,10 @@ const CategoryProductPage = () => {
             Danh mục ID: {category.id}
           </span>
         </div>
-      </div>
+      </div> */}
 
       {/* Breadcrumb */}
-      <nav className="flex mb-8" aria-label="Breadcrumb">
+      {/* <nav className="flex mb-8" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-3">
           <li className="inline-flex items-center">
             <a href="/" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-red-600">
@@ -111,16 +101,16 @@ const CategoryProductPage = () => {
             </div>
           </li>
         </ol>
-      </nav>
+      </nav> */}
 
       {/* Products Grid */}
       {books.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {books.map((book) => (
-            <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <Card onClick={() => navigate(`/book/${book.id}`)} key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="relative">
                 <img
-                  src={book.cover_image_url as string}
+                  src={`${import.meta.env.VITE_APP_API_URL_IMAGE}${book.cover_image_url}`}
                   alt={book.title}
                   className="w-full h-64 object-cover"
                 />

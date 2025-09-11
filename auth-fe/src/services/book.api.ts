@@ -36,13 +36,20 @@ export const bookApi = {
   },
 
   user: {
-
+    getBooks: async (
+      params: PaginationParams = defaultParams
+    ): Promise<ListResponse<Book>> => {
+      const response = await api.get("/user/books", {
+        params,
+      });
+      return response.data;
+    },
     getBooksByCategory: async (categoryId: number | string, params: PaginationParams = defaultParams): Promise<ListResponse<Book>> => {
       const response = await api.get(`/user/categories/${categoryId}/products`, { params });
       return response.data;
     },
     getBookDetail: async (id: number | string): Promise<SingleResponse<Book>> => {
-      const response = await api.get(`/books/${id}`);
+      const response = await api.get(`user/books/${id}`);
       return response.data;
     },
   },

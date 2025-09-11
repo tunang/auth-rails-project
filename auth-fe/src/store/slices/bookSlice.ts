@@ -5,16 +5,20 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface BookState {
   books: Book[];
+  selectedBook: Book | null;
   message: string | null;
   isLoading: boolean;
+  isLoadingDetail: boolean;
   pagination: Pagination;
   perPage: number;
 }
 
 const initialState: BookState = {
   books: [],
+  selectedBook: null,
   message: null,
   isLoading: false,
+  isLoadingDetail: false,
   pagination: {
     current_page: 1,
     next_page: null,
@@ -51,12 +55,26 @@ const bookSlice = createSlice({
       state.message = null;
     },
     getBooksByCategorySuccess: (state, action: PayloadAction<ListResponse<Book>>) => {
+      console.log(action.payload.data);
       state.isLoading = false;
       state.books = action.payload.data;
       state.pagination = action.payload.pagination ?? state.pagination;
     },
     getBooksByCategoryFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
+      state.message = action.payload;
+    },
+
+    getBookDetailRequest: (state, _action: PayloadAction<number | string>) => {
+      state.isLoadingDetail = true;
+      state.message = null;
+    },
+    getBookDetailSuccess: (state, action: PayloadAction<SingleResponse<Book>>) => {
+      state.isLoadingDetail = false;
+      state.selectedBook = action.payload.data as Book;
+    },
+    getBookDetailFailure: (state, action: PayloadAction<string>) => {
+      state.isLoadingDetail = false;
       state.message = action.payload;
     },
 
@@ -121,6 +139,9 @@ export const {
   getBooksByCategoryRequest,
   getBooksByCategorySuccess,
   getBooksByCategoryFailure,
+  getBookDetailRequest,
+  getBookDetailSuccess,
+  getBookDetailFailure,
   createBookRequest,
   createBookSuccess,
   createBookFailure,

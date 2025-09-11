@@ -3,9 +3,15 @@ import {
   getOrdersRequest,
   getOrdersSuccess,
   getOrdersFailure,
+  getUserOrdersRequest,
+  getUserOrdersSuccess,
+  getUserOrdersFailure,
   getOrderDetailRequest,
   getOrderDetailSuccess,
   getOrderDetailFailure,
+  getUserOrderDetailRequest,
+  getUserOrderDetailSuccess,
+  getUserOrderDetailFailure,
   updateOrderStatusRequest,
   updateOrderStatusSuccess,
   updateOrderStatusFailure,
@@ -34,6 +40,25 @@ export function* getOrderDetailSaga(action: PayloadAction<number>) {
     }
 }
 
+export function* getUserOrdersSaga(action: PayloadAction<PaginationParams>) {
+    try {
+        const params = action.payload || {};
+        const response: ListResponse<Order> = yield call(orderApi.user.getOrders, params);
+        yield put(getUserOrdersSuccess(response));
+    } catch (error: ListResponse<null> | any) {
+        yield put(getUserOrdersFailure(error.response?.data?.status?.message || error.message));
+    }
+}
+
+export function* getUserOrderDetailSaga(action: PayloadAction<number>) {
+    try {
+        const response: SingleResponse<Order> = yield call(orderApi.user.getOrderDetail, action.payload);
+        yield put(getUserOrderDetailSuccess(response));
+    } catch (error: SingleResponse<null> | any) {
+        yield put(getUserOrderDetailFailure(error.response?.data?.status?.message || error.message));
+    }
+}
+
 export function* updateOrderStatusSaga(action: PayloadAction<{ id: number; data: UpdateOrderStatusRequest }>) {
     try {
         const { id, data } = action.payload;
@@ -46,6 +71,8 @@ export function* updateOrderStatusSaga(action: PayloadAction<{ id: number; data:
 
 export function* watchOrderSaga() {
     yield takeLatest(getOrdersRequest.type, getOrdersSaga);
+    yield takeLatest(getUserOrdersRequest.type, getUserOrdersSaga);
     yield takeLatest(getOrderDetailRequest.type, getOrderDetailSaga);
+    yield takeLatest(getUserOrderDetailRequest.type, getUserOrderDetailSaga);
     yield takeLatest(updateOrderStatusRequest.type, updateOrderStatusSaga);
 }

@@ -1,6 +1,6 @@
 import type { ListResponse, PaginationParams, SingleResponse } from "@/types";
 import { api } from "./api.service";
-import type { Category } from "@/types/category.type";
+import type { Category, NestedCategoriesResponse } from "@/types/category.type";
 import { defaultParams } from "@/constants/pagination";
 
 
@@ -30,7 +30,7 @@ export const categoryApi = {
   },
 
   user: {
-    getCategories: async (): Promise<ListResponse<Category>> => {
+    getCategories: async (): Promise<NestedCategoriesResponse> => {
       const response = await api.get("/user/categories/get_nested_category");
       return response.data;
     },

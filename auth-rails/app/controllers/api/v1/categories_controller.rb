@@ -4,34 +4,37 @@ class Api::V1::CategoriesController < ApplicationController
   before_action :set_category, only: %i[show update destroy]
 
   def index
-  authorize Category, :index?
+    authorize Category, :index?
 
-  if params[:search].present?
-    # Use elasticsearch
-    categories = Category.search_by_name(params[:search]).page(params[:page] || 1).per(params[:per_page] || 10)
-  else
-    # Use normal AR
-    categories = Category.page(params[:page] || 1).per(params[:per_page] || 10)
+    if params[:search].present?
+      # Use elasticsearch
+      categories =
+        Category
+          .search_by_name(params[:search])
+          .page(params[:page] || 1)
+          .per(params[:per_page] || 10)
+    else
+      # Use normal AR
+      categories =
+        Category.page(params[:page] || 1).per(params[:per_page] || 10)
+    end
+
+    render json: {
+             status: {
+               code: 200,
+               message: 'Fetched categories successfully',
+             },
+             data: categories.map { |a| CategorySerializer.new(a).as_json },
+             pagination: {
+               current_page: categories.current_page,
+               next_page: categories.next_page,
+               prev_page: categories.prev_page,
+               total_pages: categories.total_pages,
+               total_count: categories.total_count,
+             },
+           },
+           status: :ok
   end
-
-  render json: {
-           status: {
-             code: 200,
-             message: 'Fetched categories successfully',
-           },
-           data: categories.map { |a| CategorySerializer.new(a).as_json },
-           pagination: {
-             current_page: categories.current_page,
-             next_page: categories.next_page,
-             prev_page: categories.prev_page,
-             total_pages: categories.total_pages,
-             total_count: categories.total_count,
-           },
-         },
-         status: :ok
-end
-
-
 
   def search
     results = Category.search_by_name(params[:q])
@@ -50,49 +53,49 @@ end
            status: :ok
   end
 
-
   def get_nested_category
     # authorize :category, :get_nested_category?
 
-    categories = Category.all()
+    categories = Category.all
     render json: {
              status: {
                code: 200,
                message: 'Fetched categories successfully',
              },
              categories: CategoryTreeSerializer.new(categories).as_json,
-           }, status: :ok
+           },
+           status: :ok
   end
 
-def create
-  category = Category.new(category_params)
-  authorize Category
+  def create
+    category = Category.new(category_params)
+    authorize Category
 
-  if category.save
-    render json: {
-             status: {
-               code: 201,
-               message: 'category_created_successfully',
+    if category.save
+      render json: {
+               status: {
+                 code: 201,
+                 message: 'category_created_successfully',
+               },
+               data: CategorySerializer.new(category).as_json,
              },
-             data: CategorySerializer.new(category).as_json,
-           },
-           status: :created
-  else
-    render json: {
-             status: {
-               code: 422,
-               message: 'validation_error',
+             status: :created
+    else
+      render json: {
+               status: {
+                 code: 422,
+                 message: 'validation_error',
+               },
+               data: nil,
+               errors: category.errors.full_messages,
              },
-             data: nil,
-             errors: category.errors.full_messages,
-           },
-           status: :unprocessable_entity
+             status: :unprocessable_entity
+    end
   end
-end
-
 
   def update
     authorize @category
+
     if @category.update(category_params)
       render json: {
                status: {
@@ -104,19 +107,12 @@ end
              status: :ok
     else
       render json: {
-               status: 'error',
+               status: {
+                 code: 422,
+                 message: 'category_update_failed',
+               },
                data: nil,
-               errors:
-                 category
-                   .errors
-                   .full_messages
-                   .map { |msg|
-                     {
-                       code: 'VALIDATION_ERROR',
-                       title: 'Unprocessable Entity',
-                       detail: msg,
-                     }
-                   },
+               errors: @category.errors.full_messages,
              },
              status: :unprocessable_entity
     end
@@ -128,7 +124,7 @@ end
       render json: {
                status: {
                  code: 200,
-                 message: "category_deleted_successfully",
+                 message: 'category_deleted_successfully',
                },
                data: @category,
              },
@@ -145,7 +141,6 @@ end
     end
   end
 
-
   def restore
     category = Category.only_deleted.find(params[:id])
     if category.restore(recursive: true)
@@ -160,7 +155,10 @@ end
       render json: {
                status: 'error',
                errors: [
-                 { code: 'RESTORE_FAILED', detail: 'Could not restore category' },
+                 {
+                   code: 'RESTORE_FAILED',
+                   detail: 'Could not restore category',
+                 },
                ],
              },
              status: :unprocessable_entity

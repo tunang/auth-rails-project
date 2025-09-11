@@ -1,6 +1,6 @@
 class Api::V1::BooksController < ApplicationController
   # before_action :doorkeeper_authorize!, except: %i[index show]
-  before_action :doorkeeper_authorize!
+  before_action :doorkeeper_authorize!, except: %i[index show]
   before_action :book_job, only: %i[show update destroy]
 
   def index
@@ -136,7 +136,6 @@ class Api::V1::BooksController < ApplicationController
   end
 
   def show
-    authorize @book
     render json: {
              status: {
                code: 200,
@@ -150,12 +149,13 @@ class Api::V1::BooksController < ApplicationController
   def create
     authorize Book
     @book = Book.new(book_params)
+
     if @book.save
       CreateStripeProductJob.perform_later(@book.id)
       render json: {
                status: {
                  code: 201,
-                 message: 'Book created, syncing with stripe',
+                 message: 'book_created_successfully',
                },
                data: BookSerializer.new(@book).as_json,
              },
@@ -164,9 +164,20 @@ class Api::V1::BooksController < ApplicationController
       render json: {
                status: {
                  code: 422,
-                 message: 'Book creation failed',
+                 message: 'book_create_failed',
                },
-               errors: @book.errors.full_messages,
+               data: nil,
+               errors:
+                 @book
+                   .errors
+                   .full_messages
+                   .map do |msg|
+                     {
+                       code: 'VALIDATION_ERROR',
+                       title: 'Unprocessable Entity',
+                       detail: msg,
+                     }
+                   end,
              },
              status: :unprocessable_entity
     end
@@ -174,35 +185,13 @@ class Api::V1::BooksController < ApplicationController
 
   def update
     authorize @book
+
     if @book.update(book_params)
       UpdateStripeProductJob.perform_later(@book.id)
       render json: {
                status: {
-                 code: 201,
-                 message: 'Book updated, syncing with stripe',
-               },
-               data: BookSerializer.new(@book).as_json,
-             },
-             status: :created
-    else
-      render json: {
-               status: {
-                 code: 422,
-                 message: 'Book creation failed',
-               },
-               errors: @book.errors.full_messages,
-             },
-             status: :unprocessable_entity
-    end
-  end
-
-  def destroy
-    authorize @book
-    if @book.destroy
-      render json: {
-               status: {
                  code: 200,
-                 message: "Book '#{@book.title}' has been deleted.",
+                 message: 'book_updated_successfully',
                },
                data: BookSerializer.new(@book).as_json,
              },
@@ -211,9 +200,35 @@ class Api::V1::BooksController < ApplicationController
       render json: {
                status: {
                  code: 422,
-                 message: "Failed to delete Book '#{@book.title}'.",
-                 errors: @book.errors.full_messages,
+                 message: 'book_update_failed',
                },
+               data: nil,
+               errors: @book.errors.full_messages,
+             },
+             status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    authorize @book
+
+    if @book.destroy
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'book_deleted_successfully',
+               },
+               data: BookSerializer.new(@book).as_json,
+             },
+             status: :ok
+    else
+      render json: {
+               status: {
+                 code: 422,
+                 message: 'book_delete_failed',
+               },
+               data: nil,
+               errors: @book.errors.full_messages,
              },
              status: :unprocessable_entity
     end

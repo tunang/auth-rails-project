@@ -8,6 +8,10 @@ export const cartApi = {
       const response = await api.get("/user/cart");
       return response.data;
     },
+    addToCart: async (data: UpdateCartRequest): Promise<SingleResponse<null>> => {
+      const response = await api.post("/user/cart/add", data);
+      return response.data;
+    },
     updateCartItem: async (data: UpdateCartRequest): Promise<SingleResponse<null>> => {
       const response = await api.patch("/user/cart/update", data);
       return response.data;

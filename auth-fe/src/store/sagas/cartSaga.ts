@@ -3,6 +3,9 @@ import {
   getCartItemsRequest,
   getCartItemsSuccess,
   getCartItemsFailure,
+  addToCartRequest,
+  addToCartSuccess,
+  addToCartFailure,
   updateCartItemRequest,
   updateCartItemSuccess,
   updateCartItemFailure,
@@ -24,6 +27,17 @@ export function* getCartItemsSaga() {
         yield put(getCartItemsSuccess(response));
     } catch (error: ListResponse<null> | any) {
         yield put(getCartItemsFailure(error.response?.data?.status?.message || error.message));
+    }
+}
+
+export function* addToCartSaga(action: PayloadAction<UpdateCartRequest>) {
+    try {
+        const response: SingleResponse<null> = yield call(cartApi.user.addToCart, action.payload);
+        yield put(addToCartSuccess(response));
+        // Refresh cart after successful addition
+        yield put(getCartItemsRequest());
+    } catch (error: SingleResponse<null> | any) {
+        yield put(addToCartFailure(error.response?.data?.status?.message || error.message));
     }
 }
 
@@ -60,6 +74,7 @@ export function* clearCartSaga() {
 
 export function* watchCartSaga() {
     yield takeLatest(getCartItemsRequest.type, getCartItemsSaga);
+    yield takeLatest(addToCartRequest.type, addToCartSaga);
     yield takeLatest(updateCartItemRequest.type, updateCartItemSaga);
     yield takeLatest(removeFromCartRequest.type, removeFromCartSaga);
     yield takeLatest(clearCartRequest.type, clearCartSaga);

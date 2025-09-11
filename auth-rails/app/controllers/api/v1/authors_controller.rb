@@ -5,7 +5,11 @@ class Api::V1::AuthorsController < ApplicationController
 
   def index
     if params[:search].present?
-      authors = Author.search_by_name(params[:search]).page(params[:page] || 1).per(params[:per_page] || 10)
+      authors =
+        Author
+          .search_by_name(params[:search])
+          .page(params[:page] || 1)
+          .per(params[:per_page] || 10)
     else
       authors = Author.all
     end
@@ -49,30 +53,24 @@ class Api::V1::AuthorsController < ApplicationController
     author = Author.new(author_params.except(:image))
     authorize author
     author.photo.attach(params[:photo]) if params[:photo]
+
     if author.save
       render json: {
                status: {
                  code: 201,
-                 message: 'Author created successfully',
+                 message: 'author_created_successfully',
                },
                data: AuthorSerializer.new(author).as_json,
              },
              status: :created
     else
       render json: {
-               status: 'error',
+               status: {
+                 code: 422,
+                 message: 'author_create_failed',
+               },
                data: nil,
-               errors:
-                 author
-                   .errors
-                   .full_messages
-                   .map { |msg|
-                     {
-                       code: 'VALIDATION_ERROR',
-                       title: 'Unprocessable Entity',
-                       detail: msg,
-                     }
-                   },
+               errors: author.errors.full_messages,
              },
              status: :unprocessable_entity
     end
@@ -81,30 +79,24 @@ class Api::V1::AuthorsController < ApplicationController
   def update
     authorize @author
     @author.photo.attach(params[:photo]) if params[:photo]
+
     if @author.update(author_params)
       render json: {
                status: {
                  code: 200,
-                 message: 'Author updated successfully',
+                 message: 'author_updated_successfully',
                },
                data: AuthorSerializer.new(@author).as_json,
              },
              status: :ok
     else
       render json: {
-               status: 'error',
+               status: {
+                 code: 422,
+                 message: 'author_update_failed',
+               },
                data: nil,
-               errors:
-                 author
-                   .errors
-                   .full_messages
-                   .map { |msg|
-                     {
-                       code: 'VALIDATION_ERROR',
-                       title: 'Unprocessable Entity',
-                       detail: msg,
-                     }
-                   },
+               errors: @author.errors.full_messages,
              },
              status: :unprocessable_entity
     end
@@ -112,22 +104,24 @@ class Api::V1::AuthorsController < ApplicationController
 
   def destroy
     authorize @author
+
     if @author.destroy
       render json: {
                status: {
                  code: 200,
-                 message: "Author '#{@author.name}' has been deleted.",
+                 message: 'author_deleted_successfully',
                },
-               data: @author,
+               data: AuthorSerializer.new(@author).as_json,
              },
              status: :ok
     else
       render json: {
                status: {
                  code: 422,
-                 message: "Failed to delete Author '#{@author.name}'.",
-                 errors: @author.errors.full_messages,
+                 message: 'author_delete_failed',
                },
+               data: nil,
+               errors: @author.errors.full_messages,
              },
              status: :unprocessable_entity
     end

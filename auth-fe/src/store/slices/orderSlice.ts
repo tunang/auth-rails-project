@@ -48,6 +48,23 @@ const orderSlice = createSlice({
       state.message = action.payload;
     },
 
+    getUserOrdersRequest: (state, _action: PayloadAction<PaginationParams>) => {
+      state.isLoading = true;
+      state.message = null;
+    },
+    getUserOrdersSuccess: (
+      state,
+      action: PayloadAction<ListResponse<Order>>
+    ) => {
+      state.isLoading = false;
+      state.orders = action.payload.data;
+      state.pagination = action.payload.pagination ?? state.pagination;
+    },
+    getUserOrdersFailure: (state, action: PayloadAction<string>) => {
+      state.isLoading = false;
+      state.message = action.payload;
+    },
+
     getOrderDetailRequest: (state, _action: PayloadAction<number>) => {
       state.isLoading = true;
       state.message = null;
@@ -57,6 +74,19 @@ const orderSlice = createSlice({
       state.currentOrder = action.payload.data;
     },
     getOrderDetailFailure: (state, action: PayloadAction<string>) => {
+      state.isLoading = false;
+      state.message = action.payload;
+    },
+
+    getUserOrderDetailRequest: (state, _action: PayloadAction<number>) => {
+      state.isLoading = true;
+      state.message = null;
+    },
+    getUserOrderDetailSuccess: (state, action: PayloadAction<SingleResponse<Order>>) => {
+      state.isLoading = false;
+      state.currentOrder = action.payload.data;
+    },
+    getUserOrderDetailFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.message = action.payload;
     },
@@ -101,9 +131,15 @@ export const {
   getOrdersRequest,
   getOrdersSuccess,
   getOrdersFailure,
+  getUserOrdersRequest,
+  getUserOrdersSuccess,
+  getUserOrdersFailure,
   getOrderDetailRequest,
   getOrderDetailSuccess,
   getOrderDetailFailure,
+  getUserOrderDetailRequest,
+  getUserOrderDetailSuccess,
+  getUserOrderDetailFailure,
   updateOrderStatusRequest,
   updateOrderStatusSuccess,
   updateOrderStatusFailure,

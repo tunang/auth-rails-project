@@ -30,7 +30,7 @@ class Api::V1::CartsController < ApplicationController
       render json: {
                status: {
                  code: 200,
-                 message: 'Item added to cart',
+                 message: 'item_added',
                },
                data: {
                  quantity: item.quantity,
@@ -56,7 +56,7 @@ class Api::V1::CartsController < ApplicationController
       render json: {
                status: {
                  code: 200,
-                 message: "Item's updated",
+                 message: "item_updated",
                },
                data: {
                  quantity: item.quantity,
@@ -78,7 +78,7 @@ class Api::V1::CartsController < ApplicationController
       render json: {
                status: {
                  code: 200,
-                 message: 'Item removed from cart',
+                 message: 'item_removed',
                },
                data: {
                  quantity: item.quantity,
@@ -97,7 +97,7 @@ class Api::V1::CartsController < ApplicationController
     render json: {
              status: {
                code: 200,
-               message: 'Cart cleared.',
+               message: 'cart_cleared',
              },
              data: nil,
            },
@@ -106,34 +106,28 @@ class Api::V1::CartsController < ApplicationController
 
   private
 
-  def render_validation_errors(record)
-    render json: {
-             status: 'error',
-             data: nil,
-             errors:
-               record.errors.full_messages.map do |msg|
-                 {
-                   code: 'VALIDATION_ERROR',
-                   title: 'Unprocessable Entity',
-                   detail: msg,
-                 }
-               end,
-           },
-           status: :unprocessable_entity
-  end
+def render_validation_errors(record)
+  render json: {
+    status: {
+      code: 422,
+      message: 'validation_failed'
+    },
+    data: nil,
+    errors: record.errors.full_messages
+  }, status: :unprocessable_entity
+end
 
-  def render_not_found(message)
-    render json: {
-             status: 'error',
-             data: nil,
-             errors: [
-               {
-                 code: 'NOT_FOUND',
-                 title: 'Resource not found',
-                 detail: message,
-               },
-             ],
-           },
-           status: :not_found
-  end
+def render_not_found(message)
+  render json: {
+    status: {
+      code: 404,
+      message: 'not_found'
+    },
+    data: nil,
+    errors: [
+     message
+    ]
+  }, status: :not_found
+end
+
 end

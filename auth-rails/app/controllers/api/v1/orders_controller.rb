@@ -34,7 +34,7 @@ class Api::V1::OrdersController < ApplicationController
 
   def get_all
     authorize Order, :get_all?
-    
+
     if params[:search].present?
       # Use elasticsearch
       orders =
@@ -46,12 +46,6 @@ class Api::V1::OrdersController < ApplicationController
       # Use normal AR
       orders = Order.page(params[:page] || 1).per(params[:per_page] || 10)
     end
-
-    # orders =
-    #   Order
-    #     .includes(:books, :user, :shipping_address)
-    #     .page(params[:page] || 1)
-    #     .per(params[:per_page] || 5)
 
     render json: {
              status: {
@@ -130,8 +124,7 @@ class Api::V1::OrdersController < ApplicationController
 
       # Append tax & shipping line items
       line_items << build_line_item(name: 'Tax (10%)', unit_amount: tax_amount)
-      line_items <<
-        build_line_item(name: 'Shipping', unit_amount: shipping_cost)
+      line_items << build_line_item(name: 'Shipping', unit_amount: shipping_cost)
 
       # Tạo checkout session Stripe
       session =
@@ -184,21 +177,28 @@ class Api::V1::OrdersController < ApplicationController
 
   def update
     authorize @order
+
     if @order.update(order_params)
       # OrdersChannel.broadcast_to(
       #   current_user,
-      #   { type: 'ORDER_UPDATED', payload: OrderSerializer.new(@order).as_json },
+      #   { type: 'ORDER_UPDATED', payload: OrderSerializer.new(@order).as_json }
       # )
+
       render json: {
                status: {
-                 code: 201,
-                 message: 'Order status updated successfully',
+                 code: 200,
+                 message: 'order_updated_successfully',
                },
                data: OrderSerializer.new(@order).as_json,
              },
-             status: :created
+             status: :ok
     else
       render json: {
+               status: {
+                 code: 422,
+                 message: 'order_update_failed',
+               },
+               data: nil,
                errors: @order.errors.full_messages,
              },
              status: :unprocessable_entity
@@ -206,15 +206,28 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def destroy
-    @order.destroy
-    render json: {
-             status: {
-               code: 201,
-               message: 'Order created successfully',
+    authorize @order
+
+    if @order.destroy
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'order_deleted_successfully',
+               },
+               data: OrderSerializer.new(@order).as_json,
              },
-             data: OrderSerializer.new(@order).as_json,
-           },
-           status: :created
+             status: :ok
+    else
+      render json: {
+               status: {
+                 code: 422,
+                 message: 'order_deletion_failed',
+               },
+               data: nil,
+               errors: @order.errors.full_messages,
+             },
+             status: :unprocessable_entity
+    end
   end
 
   private

@@ -1,6 +1,6 @@
 import type { ListResponse, PaginationParams, SingleResponse } from "@/types";
 import { api } from "./api.service";
-import type { Order, UpdateOrderStatusRequest } from "@/types/order.type";
+import type { Order, UpdateOrderStatusRequest, CreateOrderRequest, CreateOrderResponse } from "@/types/order.type";
 import { defaultParams } from "@/constants/pagination";
 
 export const orderApi = {
@@ -22,6 +22,25 @@ export const orderApi = {
       data: UpdateOrderStatusRequest
     ): Promise<SingleResponse<Order>> => {
       const response = await api.patch(`/admin/orders/${id}`, data);
+      return response.data;
+    },
+  },
+  
+  user: {
+    createOrder: async (data: CreateOrderRequest): Promise<CreateOrderResponse> => {
+      const response = await api.post("/user/orders", data);
+      return response.data;
+    },
+    getOrders: async (
+      params: PaginationParams = defaultParams
+    ): Promise<ListResponse<Order>> => {
+      const response = await api.get("/user/orders", {
+        params,
+      });
+      return response.data;
+    },
+    getOrderDetail: async (id: number): Promise<SingleResponse<Order>> => {
+      const response = await api.get(`/user/orders/${id}`);
       return response.data;
     },
   },

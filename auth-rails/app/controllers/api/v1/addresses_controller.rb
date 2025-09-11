@@ -1,7 +1,7 @@
 class Api::V1::AddressesController < ApplicationController
   before_action :doorkeeper_authorize!
   before_action :set_address, only: %i[show update destroy]
-  
+
   def index
     @addresses = current_user.addresses
     authorize Address
@@ -98,18 +98,14 @@ class Api::V1::AddressesController < ApplicationController
     )
   end
 
-  # helper để tái sử dụng
   def render_validation_errors(record)
     render json: {
-             status: 'error',
-             data: nil,
-             errors: record.errors.full_messages.map { |msg|
-               {
-                 code: 'VALIDATION_ERROR',
-                 title: 'Unprocessable Entity',
-                 detail: msg,
-               }
+             status: {
+               code: 422,
+               message: 'validation_failed',
              },
+             data: nil,
+             errors: record.errors.full_messages,
            },
            status: :unprocessable_entity
   end

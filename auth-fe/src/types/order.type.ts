@@ -61,12 +61,20 @@ export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 
 export const OrderStatusLabels = {
   [OrderStatus.PENDING]: "Chờ xác nhận",
-  [OrderStatus.CONFIRMED]: "Đã xác nhận",
+  [OrderStatus.CONFIRMED]: "Đã xác nhận", 
   [OrderStatus.PROCESSING]: "Đang xử lý",
   [OrderStatus.SHIPPED]: "Đã gửi hàng",
   [OrderStatus.DELIVERED]: "Đã giao hàng",
   [OrderStatus.CANCELLED]: "Đã hủy",
-  [OrderStatus.REFUNDED]: "Đã hoàn tiền"
+  [OrderStatus.REFUNDED]: "Đã hoàn tiền",
+  // String-based mapping for API response
+  'pending': "Chờ xác nhận",
+  'confirmed': "Đã xác nhận",
+  'processing': "Đang xử lý", 
+  'shipped': "Đã gửi hàng",
+  'delivered': "Đã giao hàng",
+  'cancelled': "Đã hủy",
+  'refunded': "Đã hoàn tiền"
 };
 
 export const OrderStatusColors = {
@@ -76,9 +84,38 @@ export const OrderStatusColors = {
   [OrderStatus.SHIPPED]: "bg-indigo-100 text-indigo-800",
   [OrderStatus.DELIVERED]: "bg-green-100 text-green-800",
   [OrderStatus.CANCELLED]: "bg-red-100 text-red-800",
-  [OrderStatus.REFUNDED]: "bg-gray-100 text-gray-800"
+  [OrderStatus.REFUNDED]: "bg-gray-100 text-gray-800",
+  // String-based mapping for API response
+  'pending': "bg-yellow-100 text-yellow-800",
+  'confirmed': "bg-blue-100 text-blue-800",
+  'processing': "bg-purple-100 text-purple-800",
+  'shipped': "bg-indigo-100 text-indigo-800", 
+  'delivered': "bg-green-100 text-green-800",
+  'cancelled': "bg-red-100 text-red-800",
+  'refunded': "bg-gray-100 text-gray-800"
 };
 
 export interface UpdateOrderStatusRequest {
   status: OrderStatus;
+}
+
+export interface CreateOrderItem {
+  quantity: number;
+  book_id: number;
+}
+
+export interface CreateOrderRequest {
+  shipping_address_id: number;
+  payment_method: string;
+  note?: string;
+  order_items: CreateOrderItem[];
+}
+
+export interface CreateOrderResponse {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: Order;
+  payment_url?: string;
 }

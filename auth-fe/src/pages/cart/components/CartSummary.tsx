@@ -3,8 +3,11 @@ import { ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useDispatch } from "react-redux";
-import { clearCartRequest } from "@/store/slices/cartSlice";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useDispatch, useSelector } from "react-redux";
+import { clearCartRequest, selectAllItems, unselectAllItems } from "@/store/slices/cartSlice";
+import type { RootState } from "@/store";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -23,16 +26,32 @@ interface CartSummaryProps {
 
 const CartSummary = ({ totalItems, totalAmount, isLoading = false }: CartSummaryProps) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showClearDialog, setShowClearDialog] = useState(false);
+  
+  const { selectedItems, selectedTotalItems, selectedTotalAmount, items } = useSelector(
+    (state: RootState) => state.cart
+  );
+  
+  const allItemsSelected = selectedItems.length === items.length && items.length > 0;
+  const someItemsSelected = selectedItems.length > 0 && selectedItems.length < items.length;
 
   const handleClearCart = () => {
     dispatch(clearCartRequest());
     setShowClearDialog(false);
   };
 
+  const handleSelectAll = () => {
+    if (allItemsSelected) {
+      dispatch(unselectAllItems());
+    } else {
+      dispatch(selectAllItems());
+    }
+  };
+
   const handleCheckout = () => {
-    // TODO: Implement checkout functionality
-    console.log("Proceeding to checkout...");
+    if (selectedItems.length === 0) return;
+    navigate('/checkout');
   };
 
   if (totalItems === 0) {
@@ -60,15 +79,31 @@ const CartSummary = ({ totalItems, totalAmount, isLoading = false }: CartSummary
         <CardTitle>Tóm tắt đơn hàng</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Select All Checkbox */}
+        <div className="flex items-center space-x-2 pb-2 border-b">
+          <Checkbox
+            checked={allItemsSelected}
+            ref={(ref) => {
+              if (ref) {
+                ref.indeterminate = someItemsSelected;
+              }
+            }}
+            onCheckedChange={handleSelectAll}
+          />
+          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Chọn tất cả ({selectedItems.length}/{items.length})
+          </label>
+        </div>
+
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Số lượng sản phẩm:</span>
-          <span className="font-medium">{totalItems}</span>
+          <span className="text-sm text-gray-600">Sản phẩm đã chọn:</span>
+          <span className="font-medium">{selectedTotalItems}</span>
         </div>
 
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600">Tạm tính:</span>
           <span className="font-medium">
-            {totalAmount.toLocaleString('vi-VN')}đ
+            {selectedTotalAmount.toLocaleString('vi-VN')}đ
           </span>
         </div>
 
@@ -82,7 +117,7 @@ const CartSummary = ({ totalItems, totalAmount, isLoading = false }: CartSummary
         <div className="flex justify-between items-center">
           <span className="font-semibold">Tổng cộng:</span>
           <span className="font-bold text-lg text-primary">
-            {totalAmount.toLocaleString('vi-VN')}đ
+            {selectedTotalAmount.toLocaleString('vi-VN')}đ
           </span>
         </div>
 
@@ -91,10 +126,10 @@ const CartSummary = ({ totalItems, totalAmount, isLoading = false }: CartSummary
             className="w-full" 
             size="lg"
             onClick={handleCheckout}
-            disabled={isLoading}
+            disabled={isLoading || selectedItems.length === 0}
           >
             <ShoppingCart className="mr-2 h-4 w-4" />
-            Thanh toán
+            {selectedItems.length === 0 ? 'Chọn sản phẩm để thanh toán' : 'Thanh toán'}
           </Button>
 
           <Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>

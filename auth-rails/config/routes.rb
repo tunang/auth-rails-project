@@ -62,6 +62,7 @@ Rails
           # /user/books
           get '/categories/:id/products', to: 'books#category'
           get '/books/search', to: 'books#search'
+          get '/books/:id', to: 'books#show'
 
           # /user/addresses route
           resources :addresses
@@ -79,6 +80,8 @@ Rails
           # user/me
           get '/me', to: 'users#me'
         end
+
+        mount ActionCable.server => "/cable"
 
     
       end
