@@ -64,10 +64,12 @@ const UpdateOrderStatusModal = ({ order }: UpdateOrderStatusModalProps) => {
   };
 
   // Get available status options (you might want to restrict based on current status)
-  const statusOptions = Object.entries(OrderStatusLabels).map(([value, label]) => ({
-    value: parseInt(value) as OrderStatus,
-    label,
-  }));
+  const statusOptions = Object.entries(OrderStatusLabels)
+    .filter(([key]) => !isNaN(parseInt(key))) // Only include numeric keys
+    .map(([value, label]) => ({
+      value: parseInt(value) as OrderStatus,
+      label,
+    }));
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

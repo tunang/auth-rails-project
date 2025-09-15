@@ -39,15 +39,20 @@ Rails
 
         scope :admin do
           resources :authors
+          get 'authors/deleted/list', to: 'authors#deleted'
+          post 'authors/:id/restore', to: 'authors#restore'
 
           resources :categories
 
+          get 'categories/deleted/list', to: 'categories#deleted'
+          post 'categories/:id/restore', to: 'categories#restore'
+          
           resources :books
 
           get 'books/deleted/list', to: 'books#deleted'
           post 'books/:id/restore', to: 'books#restore'
 
-          post 'categories/:id/restore', to: 'categories#restore'
+
 
           get 'orders/get_all', to: 'orders#get_all'
           patch 'orders/:id', to: 'orders#update'
@@ -82,8 +87,6 @@ Rails
         end
 
         mount ActionCable.server => "/cable"
-
-    
       end
     end
   end

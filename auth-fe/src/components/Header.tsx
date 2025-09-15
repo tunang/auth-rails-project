@@ -27,7 +27,6 @@ const Header = () => {
   const {user, isAuthenticated} = useAppSelector((state) => state.auth);
 
   // Debug logging (can be removed in production)
-  console.log("Header render - categories count:", categories?.length);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +42,6 @@ const Header = () => {
         setIsLoadingCategories(true);
         setCategoriesError(null);
         const response = await categoryApi.user.getCategories();
-        console.log("Categories fetched successfully:", response.categories?.length, "items");
         
         // Ensure we set an array, fallback to empty array if data is not array
         const categoriesData = Array.isArray(response.categories) ? response.categories : [];

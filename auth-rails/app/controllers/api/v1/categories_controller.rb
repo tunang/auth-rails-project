@@ -67,6 +67,32 @@ class Api::V1::CategoriesController < ApplicationController
            status: :ok
   end
 
+  def deleted
+    authorize Category, :deleted?
+
+    deleted_categories =
+      Category.only_deleted.page(params[:page]).per(params[:per_page] || 10)
+
+    render json: {
+             status: {
+               code: 200,
+               message: 'Fetched deleted categories successfully',
+             },
+             data:
+               deleted_categories.map { |book|
+                 CategorySerializer.new(book).as_json
+               },
+             pagination: {
+               current_page: deleted_categories.current_page,
+               next_page: deleted_categories.next_page,
+               prev_page: deleted_categories.prev_page,
+               total_pages: deleted_categories.total_pages,
+               total_count: deleted_categories.total_count,
+             },
+           },
+           status: :ok
+  end
+
   def create
     category = Category.new(category_params)
     authorize Category

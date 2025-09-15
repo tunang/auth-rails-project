@@ -22,4 +22,8 @@ class BookPolicy < ApplicationPolicy
   def deleted?
     user.role == 'admin'
   end
+  
+  def restore?
+    user.role == 'admin'
+  end
 end

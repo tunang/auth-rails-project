@@ -236,6 +236,7 @@ class Api::V1::BooksController < ApplicationController
 
   def restore
     book = Book.only_deleted.find(params[:id])
+    authorize :book, :restore?
     if book.restore(recursive: true)
       # đồng bộ lại Elasticsearch
       book.__elasticsearch__.index_document

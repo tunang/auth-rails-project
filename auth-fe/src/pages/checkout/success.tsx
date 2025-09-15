@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 import { CheckCircle, ShoppingBag, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { clearCartRequest } from "@/store/slices/cartSlice";
 
 const CheckoutSuccessPage = () => {
   const navigate = useNavigate();

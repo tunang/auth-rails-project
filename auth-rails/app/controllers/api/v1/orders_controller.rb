@@ -124,7 +124,8 @@ class Api::V1::OrdersController < ApplicationController
 
       # Append tax & shipping line items
       line_items << build_line_item(name: 'Tax (10%)', unit_amount: tax_amount)
-      line_items << build_line_item(name: 'Shipping', unit_amount: shipping_cost)
+      line_items <<
+        build_line_item(name: 'Shipping', unit_amount: shipping_cost)
 
       # Tạo checkout session Stripe
       session =
@@ -139,6 +140,9 @@ class Api::V1::OrdersController < ApplicationController
 
       order.update!(stripe_session_id: session.id)
 
+      #Remove bought items in cart
+      remove_items_from_cart(cart_items)
+
       # Only current user
       # OrdersChannel.broadcast_to(
       #   current_user,
@@ -150,8 +154,8 @@ class Api::V1::OrdersController < ApplicationController
 
       # All admin
       ActionCable.server.broadcast(
-        'admin_orders',
-        { type: 'ORDER_UPDATED', payload: OrderSerializer.new(order).as_json },
+        'admin:order',
+        { type: 'ORDER_CREATED', payload: OrderSerializer.new(order).as_json },
       )
 
       render json: {
@@ -179,10 +183,10 @@ class Api::V1::OrdersController < ApplicationController
     authorize @order
 
     if @order.update(order_params)
-      # OrdersChannel.broadcast_to(
-      #   current_user,
-      #   { type: 'ORDER_UPDATED', payload: OrderSerializer.new(@order).as_json }
-      # )
+      ActionCable.server.broadcast(
+        'admin:order',
+        { type: 'ORDER_UPDATED', payload: OrderSerializer.new(@order).as_json },
+      )
 
       render json: {
                status: {
@@ -230,7 +234,29 @@ class Api::V1::OrdersController < ApplicationController
     end
   end
 
+  def remove
+    
+  
+  end
+
   private
+
+  def remove_items_from_cart(order_items_params)
+  order_items_params.each do |item_params|
+    book_id = item_params[:book_id]   # or item_params["book_id"]
+    quantity = item_params[:quantity]
+
+    cart_item = current_user.cart_items.find_by(book_id: book_id)
+    next unless cart_item
+
+    if cart_item.quantity > quantity.to_i
+      cart_item.update(quantity: cart_item.quantity - quantity.to_i)
+    else
+      cart_item.destroy
+    end
+  end
+end
+
 
   def set_order
     @order = Order.find(params[:id])

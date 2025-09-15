@@ -33,6 +33,32 @@ class Api::V1::AuthorsController < ApplicationController
            status: :ok
   end
 
+  def deleted
+    authorize Author, :deleted?
+
+    deleted_authors =
+      Author.only_deleted.page(params[:page]).per(params[:per_page] || 10)
+
+    render json: {
+             status: {
+               code: 200,
+               message: 'Fetched deleted authors successfully',
+             },
+             data:
+               deleted_authors.map { |author|
+                 AuthorSerializer.new(author).as_json
+               },
+             pagination: {
+               current_page: deleted_authors.current_page,
+               next_page: deleted_authors.next_page,
+               prev_page: deleted_authors.prev_page,
+               total_pages: deleted_authors.total_pages,
+               total_count: deleted_authors.total_count,
+             },
+           },
+           status: :ok
+  end
+
   def show
     authorize @author
     render json: {
@@ -122,6 +148,31 @@ class Api::V1::AuthorsController < ApplicationController
                },
                data: nil,
                errors: @author.errors.full_messages,
+             },
+             status: :unprocessable_entity
+    end
+  end
+
+  def restore
+    author = Author.only_deleted.find(params[:id])
+    authorize :author, :deleted?
+
+    if author.restore(recursive: true)
+      # đồng bộ lại Elasticsearch
+      author.__elasticsearch__.index_document
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'Author restored successfully',
+               },
+               data: AuthorSerializer.new(author).as_json,
+             }
+    else
+      render json: {
+               status: 'error',
+               errors: [
+                 { code: 'RESTORE_FAILED', detail: 'Could not restore author' },
+               ],
              },
              status: :unprocessable_entity
     end

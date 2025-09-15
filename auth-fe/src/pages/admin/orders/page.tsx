@@ -8,10 +8,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { subscribeAdminOrdersChannel } from "@/lib/cable/admin/order/cable";
+import type { AppDispatch } from "@/store";
 
 const OrdersPage = () => {
   const header = "Đơn hàng";
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as AppDispatch;
   const [searchParam, setSearchParam] = React.useState("");
   const [searchInput, setSearchInput] = useState(searchParam);
 
@@ -27,6 +29,13 @@ const OrdersPage = () => {
       getOrdersRequest({ page: 1, per_page: perPage, search: searchParam })
     );
   }, [dispatch, perPage, searchParam]);
+
+  useEffect(() => {
+    const channel = subscribeAdminOrdersChannel(dispatch);
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [dispatch]);
 
   const handlePageChange = (page: number) => {
     dispatch(
