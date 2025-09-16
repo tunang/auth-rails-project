@@ -7,6 +7,7 @@ class BookSerializer
   def as_json(*)
     {
       id: book.id,
+      slug: book.slug,
       title: book.title,
       description: book.description,
       price: book.price,

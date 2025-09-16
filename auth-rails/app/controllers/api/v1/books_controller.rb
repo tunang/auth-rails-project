@@ -261,7 +261,7 @@ class Api::V1::BooksController < ApplicationController
   private
 
   def book_job
-    @book = Book.find(params[:id])
+    @book = Book.friendly.find(params[:id])
   end
 
   def book_params

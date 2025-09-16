@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_08_032233) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_16_084726) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -112,7 +112,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_08_032233) do
     t.string "stripe_product_id"
     t.string "stripe_price_id"
     t.integer "sync_status", default: 0
+    t.string "slug"
     t.index ["deleted_at"], name: "index_books_on_deleted_at"
+    t.index ["slug"], name: "index_books_on_slug", unique: true
     t.index ["stripe_price_id"], name: "index_books_on_stripe_price_id"
     t.index ["stripe_product_id"], name: "index_books_on_stripe_product_id"
   end
@@ -138,6 +140,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_08_032233) do
     t.index ["deleted_at"], name: "index_categories_on_deleted_at"
     t.index ["parent_id", "name"], name: "index_categories_on_parent_id_and_name", unique: true
     t.index ["parent_id"], name: "index_categories_on_parent_id"
+  end
+
+  create_table "friendly_id_slugs", force: :cascade do |t|
+    t.string "slug", null: false
+    t.integer "sluggable_id", null: false
+    t.string "sluggable_type", limit: 50
+    t.string "scope"
+    t.datetime "created_at"
+    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
+    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
+    t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
   create_table "oauth_access_grants", force: :cascade do |t|

@@ -1,4 +1,6 @@
 class Book < ApplicationRecord
+  extend FriendlyId
+  friendly_id :title, use: %i[slugged history]
   acts_as_paranoid
 
   include Elasticsearch::Model
@@ -54,8 +56,6 @@ class Book < ApplicationRecord
       { query: { match_phrase_prefix: { title: query } } },
     ).records
   end
-
-
 
   def self.search_by_category(query)
     __elasticsearch__.search(

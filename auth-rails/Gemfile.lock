@@ -157,6 +157,8 @@ GEM
       logger
     faraday-net_http (3.4.1)
       net-http (>= 0.5.0)
+    friendly_id (5.5.1)
+      activerecord (>= 4.0.0)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -492,6 +494,7 @@ DEPENDENCIES
   elasticsearch-model (~> 8.0)
   elasticsearch-rails (~> 8.0)
   faker
+  friendly_id
   importmap-rails
   jbuilder
   jsonapi-serializer
