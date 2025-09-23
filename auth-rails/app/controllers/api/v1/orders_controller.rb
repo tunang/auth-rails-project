@@ -152,10 +152,10 @@ class Api::V1::OrdersController < ApplicationController
       #   },
       # )
 
-      # All admin
+      All admin
       ActionCable.server.broadcast(
-        'admin:order',
-        { type: 'ORDER_CREATED', payload: OrderSerializer.new(order).as_json },
+        'admin_orders',
+        { type: 'ORDER_UPDATED', payload: OrderSerializer.new(order).as_json },
       )
 
       render json: {
