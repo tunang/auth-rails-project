@@ -27,7 +27,7 @@ Rails
         post 'login', to: 'sessions#create'
         post 'refresh', to: 'sessions#refresh'
         post 'register', to: 'registrations#create'
-
+        delete 'logout', to: 'sessions#destroy'
         devise_for :users,
                    path: '',
                    controllers: {
@@ -36,6 +36,7 @@ Rails
 
         post 'forgot', to: 'passwords#forgot'
         post 'reset', to: 'passwords#reset'
+        
 
         scope :admin do
           resources :authors

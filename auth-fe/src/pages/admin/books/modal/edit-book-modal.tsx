@@ -78,7 +78,7 @@ const EditBookModal = ({ book }: { book: Book }) => {
     try {
       const params: PaginationParams = {
         page: 1,
-        per_page: 10,
+        per_page: 5,
         search: searchTerm,
       };
       const response = await authorApi.admin.getAuthors(params);
@@ -97,7 +97,7 @@ const EditBookModal = ({ book }: { book: Book }) => {
     try {
       const params: PaginationParams = {
         page: 1,
-        per_page: 10,
+        per_page: 5,
         search: searchTerm,
       };
       const response = await categoryApi.admin.getCategories(params);

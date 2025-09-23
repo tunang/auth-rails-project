@@ -6,8 +6,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import type { RootState } from "@/store";
 import { toast } from "sonner";
 import CreateBookModal from "./modal/create-book-modal";
+import DeletedBooksModal from "./modal/deleted-books-modal";
 import { Button } from "@/components/ui/button";
-import { Filter, Search, Trash2 } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const BooksPage = () => {
@@ -95,9 +96,7 @@ const BooksPage = () => {
             <h1 className="text-2xl font-bold">{header}</h1>
             <div className="flex gap-2">
               <CreateBookModal />
-              <Button>
-                <Trash2 /> Thùng rác
-              </Button>
+              <DeletedBooksModal />
             </div>
           </div>
 

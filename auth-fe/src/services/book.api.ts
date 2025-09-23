@@ -33,6 +33,18 @@ export const bookApi = {
       const response = await api.delete(`/admin/books/${id}`);
       return response.data;
     },
+    getDeletedBooks: async (
+      params: PaginationParams = defaultParams
+    ): Promise<ListResponse<Book>> => {
+      const response = await api.get("/admin/books/deleted/list", {
+        params,
+      });
+      return response.data;
+    },
+    restoreBook: async (id: number): Promise<SingleResponse<Book>> => {
+      const response = await api.post(`/admin/books/${id}/restore`);
+      return response.data;
+    },
   },
 
   user: {

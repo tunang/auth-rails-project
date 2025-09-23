@@ -10,13 +10,17 @@ class Api::V1::CategoriesController < ApplicationController
       # Use elasticsearch
       categories =
         Category
+          .includes(:parent, :children)
           .search_by_name(params[:search])
           .page(params[:page] || 1)
           .per(params[:per_page] || 10)
     else
       # Use normal AR
       categories =
-        Category.page(params[:page] || 1).per(params[:per_page] || 10)
+        Category
+          .includes(:parent, :children)
+          .page(params[:page] || 1)
+          .per(params[:per_page] || 10)
     end
 
     render json: {

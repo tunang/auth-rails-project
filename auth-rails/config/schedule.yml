@@ -1,5 +1,4 @@
 stripe_resync:
   cron: "0 2 * * *" #2AM eveday
-  # cron: "* * * * *" #Every minute
   class: "StripeResyncJob"
   queue: default

@@ -91,6 +91,11 @@ const orderSlice = createSlice({
       state.message = action.payload;
     },
 
+    addOrder: (state, action: PayloadAction<Order>) => {
+      console.log("addOrder slice", action.payload);
+      state.orders.push(action.payload);
+    },
+
     updateOrderStatusRequest: (
       state, 
       _action: PayloadAction<{ id: number; data: UpdateOrderStatusRequest }>
@@ -140,6 +145,7 @@ export const {
   getUserOrderDetailRequest,
   getUserOrderDetailSuccess,
   getUserOrderDetailFailure,
+  addOrder,
   updateOrderStatusRequest,
   updateOrderStatusSuccess,
   updateOrderStatusFailure,

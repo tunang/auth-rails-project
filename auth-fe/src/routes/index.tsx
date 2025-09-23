@@ -42,7 +42,11 @@ import BookDetailPage from "@/pages/books/Page";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={[Role.USER, Role.ADMIN]}>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { 
         index: true,

@@ -58,4 +58,34 @@ class Api::V1::SessionsController < ApplicationController
       render json: { error: 'Invalid refresh token' }, status: :unauthorized
     end
   end
+
+   # DELETE /api/v1/logout
+  def destroy
+    # Option 1: Revoke only the current access token
+    current_token = doorkeeper_token
+    current_token.revoke if current_token
+    
+    # Option 2: Revoke all tokens for this user (more secure for logout)
+    # This will log the user out from all devices/sessions
+    # user_tokens = Doorkeeper::AccessToken.where(
+    #   resource_owner_id: current_token&.resource_owner_id,
+    #   revoked_at: nil
+    # )
+    # user_tokens.update_all(revoked_at: Time.current)
+    
+    # render json: {
+    #   status: {
+    #     code: 200,
+    #     message: 'logout_success'
+    #   }
+    # }, status: :ok
+  rescue => e
+    render json: {
+      status: {
+        code: 500,
+        message: 'logout_failed'
+      },
+      errors: [e.message]
+    }, status: :internal_server_error
+  end
 end

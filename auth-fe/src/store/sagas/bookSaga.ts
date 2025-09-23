@@ -17,7 +17,13 @@ import {
   getBooksByCategoryRequest,
   getBookDetailRequest,
   getBookDetailSuccess,
-  getBookDetailFailure
+  getBookDetailFailure,
+  getDeletedBooksRequest,
+  getDeletedBooksSuccess,
+  getDeletedBooksFailure,
+  restoreBookRequest,
+  restoreBookSuccess,
+  restoreBookFailure
 } from "../slices/bookSlice";
 import { bookApi } from "@/services/book.api";
 import type { ListResponse, SingleResponse, PaginationParams } from "@/types";
@@ -81,6 +87,25 @@ export function* getBookDetailSaga(action: PayloadAction<number | string>) {
     }
 }
 
+export function* getDeletedBooksSaga(action: PayloadAction<PaginationParams>) {
+    try {
+        const params = action.payload || {};
+        const response: ListResponse<Book> = yield call(bookApi.admin.getDeletedBooks, params);
+        yield put(getDeletedBooksSuccess(response));
+    } catch (error: ListResponse<null> | any) {
+        yield put(getDeletedBooksFailure(error.message));
+    }
+}
+
+export function* restoreBookSaga(action: PayloadAction<number>) {
+    try {
+        const response: SingleResponse<Book> = yield call(bookApi.admin.restoreBook, action.payload);
+        yield put(restoreBookSuccess(response));
+    } catch (error: SingleResponse<null> | any) {
+        yield put(restoreBookFailure(error.message));
+    }
+}
+
 export function* bookSaga() {
     yield takeLatest(getBooksRequest.type, getBooksSaga);
     yield takeLatest(createBookRequest.type, createBookSaga);
@@ -88,4 +113,6 @@ export function* bookSaga() {
     yield takeLatest(deleteBookRequest.type, deleteBookSaga);
     yield takeLatest(getBooksByCategoryRequest.type, getBooksByCategorySaga);
     yield takeLatest(getBookDetailRequest.type, getBookDetailSaga);
+    yield takeLatest(getDeletedBooksRequest.type, getDeletedBooksSaga);
+    yield takeLatest(restoreBookRequest.type, restoreBookSaga);
 }

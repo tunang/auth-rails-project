@@ -5,21 +5,33 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface BookState {
   books: Book[];
+  deletedBooks: Book[];
   selectedBook: Book | null;
   message: string | null;
   isLoading: boolean;
   isLoadingDetail: boolean;
+  isLoadingDeleted: boolean;
   pagination: Pagination;
+  deletedPagination: Pagination;
   perPage: number;
 }
 
 const initialState: BookState = {
   books: [],
+  deletedBooks: [],
   selectedBook: null,
   message: null,
   isLoading: false,
   isLoadingDetail: false,
+  isLoadingDeleted: false,
   pagination: {
+    current_page: 1,
+    next_page: null,
+    prev_page: null,
+    total_pages: 0,
+    total_count: 0,
+  },
+  deletedPagination: {
     current_page: 1,
     next_page: null,
     prev_page: null,
@@ -124,6 +136,44 @@ const bookSlice = createSlice({
       state.message = action.payload;
     },
 
+    getDeletedBooksRequest: (state, _action: PayloadAction<PaginationParams>) => {
+      state.isLoadingDeleted = true;
+      state.message = null;
+    },
+    getDeletedBooksSuccess: (
+      state,
+      action: PayloadAction<ListResponse<Book>>
+    ) => {
+      state.isLoadingDeleted = false;
+      state.deletedBooks = action.payload.data;
+      state.deletedPagination = action.payload.pagination ?? state.deletedPagination;
+    },
+    getDeletedBooksFailure: (state, action: PayloadAction<string>) => {
+      state.isLoadingDeleted = false;
+      state.message = action.payload;
+    },
+
+    restoreBookRequest: (state, _action: PayloadAction<number>) => {
+      state.isLoading = true;
+      state.message = null;
+    },
+    restoreBookSuccess: (state, action: PayloadAction<SingleResponse<Book>>) => {
+      state.isLoading = false;
+      // Remove book from deleted books list
+      state.deletedBooks = state.deletedBooks.filter(
+        (book) => book.id !== action.payload.data?.id
+      );
+      // Add book back to books list if we're on the regular books view
+      if (action.payload.data) {
+        state.books.unshift(action.payload.data as Book);
+      }
+      state.message = action.payload.status.message;
+    },
+    restoreBookFailure: (state, action: PayloadAction<string>) => {
+      state.isLoading = false;
+      state.message = action.payload;
+    },
+
     setPerPage: (state, action: PayloadAction<number>) => {
       state.perPage = action.payload;
       // Reset to page 1 when changing per page
@@ -151,6 +201,12 @@ export const {
   deleteBookRequest,
   deleteBookSuccess,
   deleteBookFailure,
+  getDeletedBooksRequest,
+  getDeletedBooksSuccess,
+  getDeletedBooksFailure,
+  restoreBookRequest,
+  restoreBookSuccess,
+  restoreBookFailure,
   setPerPage,
 } = bookSlice.actions;
 

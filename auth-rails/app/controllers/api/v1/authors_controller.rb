@@ -14,7 +14,7 @@ class Api::V1::AuthorsController < ApplicationController
       authors = Author.all
     end
 
-    authors = authors.page(params[:page] || 1).per(params[:per_page] || 10)
+    authors = authors.includes(photo_attachment: :blob).page(params[:page] || 1).per(params[:per_page] || 10)
 
     render json: {
              status: {

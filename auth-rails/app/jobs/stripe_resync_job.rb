@@ -1,3 +1,5 @@
+#Run time config in config/schedule.yml
+
 class StripeResyncJob
   include Sidekiq::Worker
   queue_as :default
