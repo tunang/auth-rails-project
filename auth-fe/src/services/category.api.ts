@@ -27,6 +27,18 @@ export const categoryApi = {
       const response = await api.delete(`/admin/categories/${id}`);
       return response.data;
     },
+    getDeletedCategories: async (
+      params: PaginationParams = defaultParams
+    ): Promise<ListResponse<Category>> => {
+      const response = await api.get("/admin/categories/deleted/list", {
+        params,
+      });
+      return response.data;
+    },
+    restoreCategory: async (id: number): Promise<SingleResponse<Category>> => {
+      const response = await api.post(`/admin/categories/${id}/restore`);
+      return response.data;
+    },
   },
 
   user: {

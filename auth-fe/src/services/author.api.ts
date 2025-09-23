@@ -33,5 +33,17 @@ export const authorApi = {
       const response = await api.delete(`/admin/authors/${id}`);
       return response.data;
     },
+    getDeletedAuthors: async (
+      params: PaginationParams = defaultParams
+    ): Promise<ListResponse<Author>> => {
+      const response = await api.get("/admin/authors/deleted/list", {
+        params,
+      });
+      return response.data;
+    },
+    restoreAuthor: async (id: number): Promise<SingleResponse<Author>> => {
+      const response = await api.post(`/admin/authors/${id}/restore`);
+      return response.data;
+    },
   },
 };

@@ -11,7 +11,13 @@ import {
   deleteAuthorSuccess, 
   createAuthorRequest, 
   deleteAuthorRequest, 
-  updateAuthorRequest 
+  updateAuthorRequest,
+  getDeletedAuthorsRequest,
+  getDeletedAuthorsSuccess,
+  getDeletedAuthorsFailure,
+  restoreAuthorRequest,
+  restoreAuthorSuccess,
+  restoreAuthorFailure
 } from "../slices/authorSlice";
 import { authorApi } from "@/services/author.api";
 import type { ListResponse, SingleResponse, PaginationParams } from "@/types";
@@ -56,9 +62,30 @@ export function* deleteAuthorSaga(action: PayloadAction<number>) {
     }
 }
 
+export function* getDeletedAuthorsSaga(action: PayloadAction<PaginationParams>) {
+    try {
+        const params = action.payload || {};
+        const response: ListResponse<Author> = yield call(authorApi.admin.getDeletedAuthors, params);
+        yield put(getDeletedAuthorsSuccess(response));
+    } catch (error: ListResponse<null> | any) {
+        yield put(getDeletedAuthorsFailure(error.message));
+    }
+}
+
+export function* restoreAuthorSaga(action: PayloadAction<number>) {
+    try {
+        const response: SingleResponse<Author> = yield call(authorApi.admin.restoreAuthor, action.payload);
+        yield put(restoreAuthorSuccess(response));
+    } catch (error: SingleResponse<null> | any) {
+        yield put(restoreAuthorFailure(error.message));
+    }
+}
+
 export function* authorSaga() {
     yield takeLatest(getAuthorsRequest.type, getAuthorsSaga);
     yield takeLatest(createAuthorRequest.type, createAuthorSaga);
     yield takeLatest(updateAuthorRequest.type, updateAuthorSaga);
     yield takeLatest(deleteAuthorRequest.type, deleteAuthorSaga);
+    yield takeLatest(getDeletedAuthorsRequest.type, getDeletedAuthorsSaga);
+    yield takeLatest(restoreAuthorRequest.type, restoreAuthorSaga);
 }

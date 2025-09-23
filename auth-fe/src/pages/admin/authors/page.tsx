@@ -6,8 +6,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import type { RootState } from "@/store";
 import { toast } from "sonner";
 import CreateAuthorModal from "./modal/create-author-modal";
+import DeletedAuthorsModal from "./modal/deleted-authors-modal";
 import { Button } from "@/components/ui/button";
-import { Filter, Search, Trash2 } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const AuthorsPage = () => {
@@ -97,9 +98,7 @@ const AuthorsPage = () => {
             <h1 className="text-2xl font-bold">{header}</h1>
             <div className="flex gap-2">
               <CreateAuthorModal />
-              <Button>
-                <Trash2 /> Thùng rác
-              </Button>
+              <DeletedAuthorsModal />
             </div>
           </div>
 

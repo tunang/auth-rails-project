@@ -1,7 +1,8 @@
 class Category < ApplicationRecord
+  acts_as_paranoid
+  
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
-  acts_as_paranoid
 
   has_many :book_categories, dependent: :destroy
   has_many :books, through: :book_categories
@@ -12,6 +13,8 @@ class Category < ApplicationRecord
   validates :name, presence: true, uniqueness: { scope: :parent_id }
 
   scope :main_categories, -> { where(parent_id: nil) }
+
+  after_restore :reindex_in_elasticsearch
 
   settings do
     mappings dynamic: false do
@@ -34,6 +37,12 @@ class Category < ApplicationRecord
         }
       }
     ).records
+  end
+
+   private
+
+  def reindex_in_elasticsearch
+    __elasticsearch__.index_document
   end
 
 end

@@ -1,5 +1,5 @@
 import { call, put, takeLatest } from "redux-saga/effects";
-import { createCategoryFailure, createCategorySuccess, getCategoriesFailure, getCategoriesRequest, getCategoriesSuccess, updateCategorySuccess, updateCategoryFailure, deleteCategoryFailure, deleteCategorySuccess, createCategoryRequest, deleteCategoryRequest, updateCategoryRequest } from "../slices/categorySlice";
+import { createCategoryFailure, createCategorySuccess, getCategoriesFailure, getCategoriesRequest, getCategoriesSuccess, updateCategorySuccess, updateCategoryFailure, deleteCategoryFailure, deleteCategorySuccess, createCategoryRequest, deleteCategoryRequest, updateCategoryRequest, getDeletedCategoriesRequest, getDeletedCategoriesSuccess, getDeletedCategoriesFailure, restoreCategoryRequest, restoreCategorySuccess, restoreCategoryFailure } from "../slices/categorySlice";
 import { categoryApi } from "@/services/category.api";
 import type {ListResponse, SingleResponse, PaginationParams } from "@/types";
 import type { Category } from "@/types/category.type";
@@ -42,10 +42,30 @@ export function* deleteCategorySaga(action: PayloadAction<number>) {
     }
 }
 
+export function* getDeletedCategoriesSaga(action: PayloadAction<PaginationParams>) {
+    try {
+        const params = action.payload || {};
+        const response: ListResponse<Category> = yield call(categoryApi.admin.getDeletedCategories, params);
+        yield put(getDeletedCategoriesSuccess(response));
+    } catch (error: ListResponse<null> | any) {
+        yield put(getDeletedCategoriesFailure(error.message));
+    }
+}
+
+export function* restoreCategorySaga(action: PayloadAction<number>) {
+    try {
+        const response: SingleResponse<Category> = yield call(categoryApi.admin.restoreCategory, action.payload);
+        yield put(restoreCategorySuccess(response));
+    } catch (error: SingleResponse<null> | any) {
+        yield put(restoreCategoryFailure(error.message));
+    }
+}
 
 export function* categorySaga() {
     yield takeLatest(getCategoriesRequest.type, getCategoriesSaga);
     yield takeLatest(createCategoryRequest.type, createCategorySaga);
     yield takeLatest(updateCategoryRequest.type, updateCategorySaga);
     yield takeLatest(deleteCategoryRequest.type, deleteCategorySaga);
+    yield takeLatest(getDeletedCategoriesRequest.type, getDeletedCategoriesSaga);
+    yield takeLatest(restoreCategoryRequest.type, restoreCategorySaga);
 }

@@ -6,8 +6,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import type { RootState } from "@/store";
 import { toast } from "sonner";
 import CreateCategoryModal from "./modal/create-category-modal";
+import DeletedCategoriesModal from "./modal/deleted-categories-modal";
 import { Button } from "@/components/ui/button";
-import { Filter, Search, Trash2 } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const CategoriesPage = () => {
@@ -96,9 +97,7 @@ const CategoriesPage = () => {
             <h1 className="text-2xl font-bold">{header}</h1>
             <div className="flex gap-2">
               <CreateCategoryModal />
-              <Button>
-                <Trash2 /> Recycle Bin
-              </Button>
+              <DeletedCategoriesModal />
             </div>
           </div>
 

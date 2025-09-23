@@ -5,17 +5,29 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface CategoryState {
   categories: Category[];
+  deletedCategories: Category[];
   message: string | null;
   isLoading: boolean;
+  isLoadingDeleted: boolean;
   pagination: Pagination;
+  deletedPagination: Pagination;
   perPage: number;
 }
 
 const initialState: CategoryState = {
   categories: [],
+  deletedCategories: [],
   message: null,
   isLoading: false,
+  isLoadingDeleted: false,
   pagination: {
+    current_page: 1,
+    next_page: null,
+    prev_page: null,
+    total_pages: 0,
+    total_count: 0,
+  },
+  deletedPagination: {
     current_page: 1,
     next_page: null,
     prev_page: null,
@@ -95,6 +107,44 @@ const categorySlice = createSlice({
       state.message = action.payload;
     },
 
+    getDeletedCategoriesRequest: (state, _action: PayloadAction<PaginationParams>) => {
+      state.isLoadingDeleted = true;
+      state.message = null;
+    },
+    getDeletedCategoriesSuccess: (
+      state,
+      action: PayloadAction<ListResponse<Category>>
+    ) => {
+      state.isLoadingDeleted = false;
+      state.deletedCategories = action.payload.data;
+      state.deletedPagination = action.payload.pagination ?? state.deletedPagination;
+    },
+    getDeletedCategoriesFailure: (state, action: PayloadAction<string>) => {
+      state.isLoadingDeleted = false;
+      state.message = action.payload;
+    },
+
+    restoreCategoryRequest: (state, _action: PayloadAction<number>) => {
+      state.isLoading = true;
+      state.message = null;
+    },
+    restoreCategorySuccess: (state, action: PayloadAction<SingleResponse<Category>>) => {
+      state.isLoading = false;
+      // Remove category from deleted categories list
+      state.deletedCategories = state.deletedCategories.filter(
+        (category) => category.id !== action.payload.data?.id
+      );
+      // Add category back to categories list if we're on the regular categories view
+      if (action.payload.data) {
+        state.categories.unshift(action.payload.data as Category);
+      }
+      state.message = action.payload.status.message;
+    },
+    restoreCategoryFailure: (state, action: PayloadAction<string>) => {
+      state.isLoading = false;
+      state.message = action.payload;
+    },
+
     setPerPage: (state, action: PayloadAction<number>) => {
       state.perPage = action.payload;
       // Reset to page 1 when changing per page
@@ -116,6 +166,12 @@ export const {
   deleteCategoryRequest,
   deleteCategorySuccess,
   deleteCategoryFailure,
+  getDeletedCategoriesRequest,
+  getDeletedCategoriesSuccess,
+  getDeletedCategoriesFailure,
+  restoreCategoryRequest,
+  restoreCategorySuccess,
+  restoreCategoryFailure,
   setPerPage,
 } = categorySlice.actions;
 

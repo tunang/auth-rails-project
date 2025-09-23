@@ -174,6 +174,7 @@ class Api::V1::CategoriesController < ApplicationController
   def restore
     category = Category.only_deleted.find(params[:id])
     if category.restore(recursive: true)
+      # category.__elasticsearch__.index_document #move this to after restore in category model, better handle
       render json: {
                status: {
                  code: 200,
