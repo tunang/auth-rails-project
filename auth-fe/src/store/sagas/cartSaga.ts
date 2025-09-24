@@ -45,8 +45,7 @@ export function* updateCartItemSaga(action: PayloadAction<UpdateCartRequest>) {
     try {
         const response: SingleResponse<null> = yield call(cartApi.user.updateCartItem, action.payload);
         yield put(updateCartItemSuccess(response));
-        // Refresh cart after successful update
-        yield put(getCartItemsRequest());
+        // No need to refresh cart - component handles local state update
     } catch (error: SingleResponse<null> | any) {
         yield put(updateCartItemFailure(error.response?.data?.status?.message || error.message));
     }

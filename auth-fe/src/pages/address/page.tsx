@@ -6,7 +6,9 @@ import React, { useEffect } from "react";
 import type { RootState } from "@/store";
 import { toast } from "sonner";
 import CreateAddressModal from "./modal/create-address-modal";
-import { MapPin } from "lucide-react";
+import { MapPin, Home, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const AddressPage = () => {
   const header = "Địa chỉ của tôi";
@@ -35,11 +37,13 @@ const AddressPage = () => {
 
   if (isLoading && data.length === 0) {
     return (
-      <div className="container mx-auto pt-4">
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Đang tải địa chỉ...</p>
+      <div className="min-h-screen bg-amber-50/30">
+        <div className="max-w-[1400px] mx-auto px-8 py-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+              <p className="text-amber-700">Đang tải địa chỉ...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -47,39 +51,50 @@ const AddressPage = () => {
   }
 
   return (
-    <div className="container mx-auto pt-4">
-      <div>
-        <div>
-          <div className="flex justify-between items-center border-b border-gray-200 gap-4 pb-2">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold">{header}</h1>
-            </div>
-            <div className="flex gap-2">
-              <CreateAddressModal />
-            </div>
+    <div className="min-h-screen bg-amber-50/30">
+      <div className="max-w-[1400px] mx-auto px-8 py-8">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+           
           </div>
 
-          {data.length === 0 && !isLoading ? (
-            <div className="text-center py-12">
-              <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Chưa có địa chỉ nào
-              </h3>
-              <p className="text-gray-500 mb-4">
-                Thêm địa chỉ để thuận tiện cho việc giao hàng
-              </p>
-              <CreateAddressModal />
-            </div>
-          ) : (
-            <div className="mt-4">
-              <DataTable
-                columns={columns}
-                data={data}
-              />
-            </div>
-          )}
+          <nav className="flex items-center space-x-2 text-sm text-amber-600">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => (window.location.href = "/")}
+              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 p-1"
+            >
+              <Home className="h-4 w-4 mr-1" />
+              Trang chủ
+            </Button>
+            <ChevronRight className="h-4 w-4" />
+            <span className="font-medium text-amber-800">Địa chỉ</span>
+          </nav>
         </div>
+
+        {data.length === 0 && !isLoading ? (
+          <Card className="bg-white rounded-2xl shadow-lg">
+            <CardContent className="text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                <MapPin className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-amber-800 mb-2">Chưa có địa chỉ nào</h3>
+              <p className="text-amber-600 mb-6">Thêm địa chỉ để thuận tiện cho việc giao hàng</p>
+              <CreateAddressModal />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-white rounded-2xl shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <CardTitle className="text-amber-800">Danh sách địa chỉ</CardTitle>
+              <CreateAddressModal />
+            </CardHeader>
+            <CardContent>
+              <DataTable columns={columns} data={data} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

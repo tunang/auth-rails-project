@@ -3,6 +3,9 @@ import { type Book } from "@/types/book.type";
 import { Badge } from "@/components/ui/badge";
 import DeleteBookPopover from "./modal/delete-book-popover";
 import EditBookModal from "./modal/edit-book-modal";
+import { Pen, Pencil, Trash } from "lucide-react";
+
+
 
 export const columns: ColumnDef<Book>[] = [
   {

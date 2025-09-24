@@ -1,4 +1,9 @@
 stripe_resync:
-  cron: "0 2 * * *" #2AM eveday
+  cron: "0 2 * * *" # 2AM everyday
   class: "StripeResyncJob"
+  queue: default
+
+hard_delete_cron:
+  cron: "0 2 * * *" # every minute (for testing)
+  class: "HardDeleteCronJob"
   queue: default

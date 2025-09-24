@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAppSelector } from "@/hooks/useAppDispatch";
-import { ListOrderedIcon, LogOutIcon, MapPinIcon, ShieldIcon, UserIcon } from "lucide-react";
+import { ListOrderedIcon, LogOutIcon, MapPinIcon, ShieldIcon, UserIcon, BookOpenIcon, SearchIcon, ShoppingCartIcon, MenuIcon, XIcon } from "lucide-react";
 import { categoryApi } from "@/services/category.api";
 import type { Category } from "@/types/category.type";
 
@@ -83,16 +83,22 @@ const Header = () => {
 
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-white shadow-lg border-b border-amber-100">
       {/* Top Bar */}
-      <div className="bg-red-600 text-white text-xs">
-        <div className="container mx-auto px-4 py-1">
+      <div className="bg-amber-800 text-amber-50 text-sm">
+        <div className="max-w-7xl mx-auto px-6 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <span>📞 Hotline: 1900-636-467</span>
-              <span>📍 106 cửa hàng toàn quốc</span>
+            <div className="flex items-center space-x-6">
+              <span className="flex items-center space-x-1">
+                <span>📞</span>
+                <span>Hotline: 1900-636-467</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <span>📍</span>
+                <span>106 cửa hàng toàn quốc</span>
+              </span>
             </div>
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-6">
               <span>Miễn phí giao hàng với đơn từ 150k</span>
               <span>Ứng dụng di động</span>
             </div>
@@ -101,130 +107,117 @@ const Header = () => {
       </div>
 
       {/* Main Header */}
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
-            <div className="bg-red-600 text-white p-2 rounded-lg">
-              <svg
-                className="h-6 w-6"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 2L2 7v10c0 5.55 3.84 10 9 11 1.09-.21 2.28-.71 3.33-1.36C16.97 24.29 20.16 21.14 22 17c0-5.55-3.84-10-9-11zm0 2.18c4.16.79 7 3.7 7 7.82 0 4.12-2.84 7.03-7 7.82V4.18z"/>
-              </svg>
+          <Link to="/" className="flex items-center space-x-4 group">
+            <div className="bg-amber-600 text-white p-3 rounded-xl shadow-md group-hover:bg-amber-700 transition-colors">
+              <BookOpenIcon className="h-8 w-8" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-red-600">FAHASA</span>
-              <span className="text-xs text-gray-500">Thế giới trong tầm tay</span>
+              <span className="text-2xl font-bold text-amber-700 group-hover:text-amber-800 transition-colors">FAHASA</span>
+              <span className="text-sm text-amber-600 font-medium">Thế giới trong tầm tay</span>
             </div>
           </Link>
 
-          {/* Categories Dropdown */}
-          <div className="hidden lg:block">
-            <DropdownMenu open={isCategoriesOpen} onOpenChange={setIsCategoriesOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="bg-orange-500 text-white border-orange-500 hover:bg-orange-600 ml-8"
-                >
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                  Danh mục sản phẩm
-                  <svg className="h-4 w-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-80 max-h-96 overflow-y-auto" align="start">
-                {isLoadingCategories ? (
-                  <div className="p-4 text-center text-gray-500">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
-                    <p className="mt-2 text-sm">Đang tải danh mục...</p>
-                  </div>
-                ) : categoriesError ? (
-                  <div className="p-4 text-center text-red-500">
-                    <p className="text-sm">Lỗi tải danh mục: {categoriesError}</p>
-                    <button 
-                      onClick={() => window.location.reload()} 
-                      className="mt-2 text-xs text-blue-600 underline"
-                    >
-                      Thử lại
-                    </button>
-                  </div>
-                ) : categories && categories.length > 0 ? (
-                  categories.map((category) => (
-                    <div key={category.id} className="p-2">
-                      <DropdownMenuItem asChild>
-                        <Link 
-                          to={`/category/${category.id}`}
-                          className="flex justify-between font-medium text-gray-800 hover:text-red-600"
-                        >
-                        <span>{category.name}</span>
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                      </Link>
-                    </DropdownMenuItem>
-                      {renderSubCategories(category.children)}
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-4 text-center text-gray-500">
-                    <p className="text-sm">Không có danh mục nào</p>
-                  </div>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
           {/* Search Bar */}
-          <div className="flex flex-1 items-center justify-center px-4 lg:px-6">
+          <div className="flex flex-1 items-center justify-center px-8">
             <form onSubmit={handleSearch} className="w-full max-w-2xl">
-              <div className="relative">
+              <div className="relative flex items-center">
+                {/* Categories Dropdown */}
+                <DropdownMenu open={isCategoriesOpen} onOpenChange={setIsCategoriesOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="bg-amber-600 text-white border-amber-600 hover:bg-amber-700 mr-2 h-12 px-4 rounded-l-xl rounded-r-none"
+                    >
+                      <MenuIcon className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[800px] max-h-[600px] p-6" align="start">
+                    {isLoadingCategories ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                        <p className="ml-3 text-amber-700 font-medium">Đang tải danh mục...</p>
+                      </div>
+                    ) : categoriesError ? (
+                      <div className="text-center py-12">
+                        <p className="text-red-600 font-medium mb-4">Lỗi tải danh mục: {categoriesError}</p>
+                        <button 
+                          onClick={() => window.location.reload()} 
+                          className="text-amber-600 underline hover:text-amber-700 font-medium"
+                        >
+                          Thử lại
+                        </button>
+                      </div>
+                    ) : categories && categories.length > 0 ? (
+                      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {categories.map((category) => (
+                          <div key={category.id} className="group">
+                            <Link 
+                              to={`/category/${category.id}`}
+                              className="block p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-all duration-200 border border-amber-200 hover:border-amber-300 hover:shadow-md"
+                            >
+                              <div className="text-center">
+                                <div className="w-10 h-10 bg-amber-200 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:bg-amber-300 transition-colors">
+                                  <BookOpenIcon className="h-5 w-5 text-amber-700" />
+                                </div>
+                                <h3 className="font-semibold text-gray-800 group-hover:text-amber-800 transition-colors text-sm leading-tight">
+                                  {category.name}
+                                </h3>
+                              </div>
+                            </Link>
+                            
+                            {/* Sub Categories */}
+                            {category.children && Array.isArray(category.children) && category.children.length > 0 && (
+                              <div className="mt-2 space-y-1">
+                                {category.children.map((child) => (
+                                  <Link
+                                    key={child.id}
+                                    to={`/category/${child.id}`}
+                                    className="block text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-100 px-2 py-1 rounded transition-colors"
+                                  >
+                                    • {child.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-gray-500 font-medium">Không có danh mục nào</p>
+                      </div>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <Input
                   type="search"
                   placeholder="Tìm kiếm sách, văn phòng phẩm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-11 pr-12 border-2 border-red-200 focus:border-red-500 rounded-lg"
+                  className="h-12 pr-14 border-2 border-amber-200 focus:border-amber-400 rounded-r-xl rounded-l-none text-base shadow-sm"
                 />
                 <Button
                   type="submit"
                   size="sm"
-                  className="absolute right-1 top-1 h-9 px-4 bg-red-600 hover:bg-red-700 text-white rounded-md"
+                  className="absolute right-2 top-2 h-8 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-sm"
                 >
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                  <SearchIcon className="h-4 w-4" />
                 </Button>
               </div>
-
             </form>
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             {/* Cart */}
             <Link to="/cart">
-              <Button variant="ghost" size="sm" className="relative text-gray-600 hover:text-red-600 flex items-center space-x-1">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 100 4 2 2 0 000-4z" />
-                </svg>
-                <span className="hidden lg:inline-block text-sm">Giỏ hàng</span>
-         
+              <Button variant="ghost" size="sm" className="relative text-amber-700 hover:text-amber-800 hover:bg-amber-50 flex items-center space-x-2 px-4 py-2 rounded-lg">
+                <ShoppingCartIcon className="h-5 w-5" />
+                <span className="hidden lg:inline-block text-sm font-medium">Giỏ hàng</span>
               </Button>
             </Link>
 
@@ -232,59 +225,59 @@ const Header = () => {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative flex items-center space-x-2 text-gray-600 hover:text-red-600">
-                    <Avatar className="h-7 w-7">
-                      <AvatarFallback className="bg-red-100 text-red-600">{user?.name?.charAt(0)}</AvatarFallback>
+                  <Button variant="ghost" className="relative flex items-center space-x-2 text-amber-700 hover:text-amber-800 hover:bg-amber-50 px-4 py-2 rounded-lg">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-amber-100 text-amber-700 font-semibold">{user?.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="hidden lg:inline-block text-sm">Tài khoản</span>
+                    <span className="hidden lg:inline-block text-sm font-medium">Tài khoản</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <div className="flex items-center justify-start gap-2 p-2">
+                <DropdownMenuContent className="w-64" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-3 p-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-amber-100 text-amber-700 font-semibold">{user?.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
                     <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{user?.name}</p>
-                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                      <p className="font-semibold text-gray-900">{user?.name}</p>
+                      <p className="w-[200px] truncate text-sm text-gray-600">
                         {user?.email}
                       </p>
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/orders"><ListOrderedIcon /> Đơn hàng của tôi</Link>
+                  <DropdownMenuItem asChild className="p-3">
+                    <Link to="/orders" className="flex items-center space-x-2"><ListOrderedIcon className="h-4 w-4" /> <span>Đơn hàng của tôi</span></Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                      <Link to="/address"><MapPinIcon /> Sổ địa chỉ</Link>
+                  <DropdownMenuItem asChild className="p-3">
+                    <Link to="/address" className="flex items-center space-x-2"><MapPinIcon className="h-4 w-4" /> <span>Sổ địa chỉ</span></Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile"><UserIcon /> Thông tin cá nhân</Link>
+                  <DropdownMenuItem asChild className="p-3">
+                    <Link to="/profile" className="flex items-center space-x-2"><UserIcon className="h-4 w-4" /> <span>Thông tin cá nhân</span></Link>
                   </DropdownMenuItem>
 
                   {user?.role === "admin" && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin"><ShieldIcon /> Quản trị</Link>
+                    <DropdownMenuItem asChild className="p-3">
+                      <Link to="/admin" className="flex items-center space-x-2"><ShieldIcon className="h-4 w-4" /> <span>Quản trị</span></Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">
-                    <LogOutIcon /> Đăng xuất
+                  <DropdownMenuItem className="text-red-600 p-3">
+                    <LogOutIcon className="h-4 w-4 mr-2" /> Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center space-x-3">
-                <Button asChild variant="ghost" size="sm" className="text-gray-600 hover:text-red-600">
-                  <Link to="/login" className="flex items-center space-x-1">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span className="hidden lg:inline-block">Đăng nhập</span>
+              <div className="flex items-center space-x-4">
+                <Button asChild variant="ghost" size="sm" className="text-amber-700 hover:text-amber-800 hover:bg-amber-50 px-4 py-2 rounded-lg">
+                  <Link to="/login" className="flex items-center space-x-2">
+                    <UserIcon className="h-4 w-4" />
+                    <span className="hidden lg:inline-block font-medium">Đăng nhập</span>
                   </Link>
                 </Button>
-                <Button asChild size="sm" className="bg-red-600 hover:bg-red-700">
+                <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg shadow-sm">
                   <Link to="/register">
-                    <span className="hidden text-white lg:inline-block">Đăng ký</span>
-                    <span className="lg:hidden">DK</span>
+                    <span className="hidden lg:inline-block font-medium">Đăng ký</span>
+                    <span className="lg:hidden font-medium">DK</span>
                   </Link>
                 </Button>
               </div>
@@ -296,95 +289,73 @@ const Header = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-600"
+                className="text-amber-700 hover:text-amber-800 hover:bg-amber-50 p-2 rounded-lg"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  {isMobileMenuOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  )}
-                </svg>
+                {isMobileMenuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
               </Button>
             </div>
           </div>
         </div>
 
+
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="border-t lg:hidden bg-white shadow-lg">
-            <div className="px-4 py-4">
+          <div className="border-t border-amber-100 lg:hidden bg-white shadow-lg">
+            <div className="px-4 py-6">
               {/* Mobile Categories */}
-              <div className="mb-4 px-2">
-                <h3 className="font-semibold text-gray-800 mb-3">Danh mục sản phẩm</h3>
-                <div className="grid grid-cols-1 gap-1">
+              <div className="mb-6">
+                <h3 className="font-semibold text-amber-800 mb-4 text-lg">Danh mục sản phẩm</h3>
+                <div className="grid grid-cols-1 gap-2">
                   {isLoadingCategories ? (
-                    <div className="p-4 text-center text-gray-500">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
-                      <p className="mt-2 text-sm">Đang tải danh mục...</p>
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600"></div>
+                      <p className="ml-3 text-amber-700">Đang tải danh mục...</p>
                     </div>
                   ) : categoriesError ? (
-                    <div className="p-4 text-center text-red-500">
-                      <p className="text-sm">Lỗi tải danh mục: {categoriesError}</p>
+                    <div className="text-center py-8">
+                      <p className="text-red-600 mb-4">Lỗi tải danh mục: {categoriesError}</p>
                       <button 
                         onClick={() => window.location.reload()} 
-                        className="mt-2 text-xs text-blue-600 underline"
+                        className="text-amber-600 underline"
                       >
                         Thử lại
                       </button>
                     </div>
                   ) : categories && categories.length > 0 ? (
                     categories.map((category) => (
-                      <div key={category.id} className="mb-2">
-                      <Link
+                      <div key={category.id} className="mb-3">
+                        <Link
                           to={`/category/${category.id}`}
-                          className="text-sm font-medium text-gray-800 py-2 px-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors flex justify-between items-center"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {category.name}
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                          className="text-sm font-medium text-gray-800 py-3 px-4 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-colors flex justify-between items-center bg-gray-50"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          {category.name}
+                          <BookOpenIcon className="h-4 w-4" />
                         </Link>
                         {/* Mobile Sub Categories */}
                         {category.children && Array.isArray(category.children) && category.children.length > 0 && (
-                          <div className="ml-4 mt-1">
+                          <div className="ml-4 mt-2 space-y-1">
                             {category.children.map((child) => (
                               <div key={child.id} className="mb-1">
                                 <Link
                                   to={`/category/${child.id}`}
-                                  className="text-xs text-gray-600 py-1 px-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors block"
+                                  className="text-xs text-amber-600 py-2 px-3 hover:bg-amber-100 hover:text-amber-700 rounded transition-colors block"
                                   onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                   • {child.name}
                                 </Link>
                                 {/* Third level categories */}
                                 {child.children && Array.isArray(child.children) && child.children.length > 0 && (
-                                  <div className="ml-4 mt-1">
+                                  <div className="ml-4 mt-1 space-y-1">
                                     {child.children.map((grandChild) => (
                                       <Link
                                         key={grandChild.id}
                                         to={`/category/${grandChild.id}`}
-                                        className="text-xs text-gray-500 py-1 px-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors block"
+                                        className="text-xs text-gray-500 py-1 px-3 hover:bg-amber-50 hover:text-amber-600 rounded transition-colors block"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                       >
                                         ◦ {grandChild.name}
-                      </Link>
+                                      </Link>
                                     ))}
                                   </div>
                                 )}
@@ -395,8 +366,8 @@ const Header = () => {
                       </div>
                     ))
                   ) : (
-                    <div className="p-4 text-center text-gray-500">
-                      <p className="text-sm">Không có danh mục nào</p>
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Không có danh mục nào</p>
                     </div>
                   )}
                 </div>

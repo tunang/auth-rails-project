@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { XCircle, ShoppingCart, ArrowLeft } from "lucide-react";
+import { XCircle, ShoppingCart, ArrowLeft, BookOpenIcon, AlertTriangleIcon, RefreshCwIcon, HomeIcon, MailIcon, PhoneIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -7,70 +7,128 @@ const CheckoutCancelPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-md mx-auto">
-        <Card className="text-center">
-          <CardHeader className="pb-4">
-            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <XCircle className="w-8 h-8 text-red-600" />
+    <div className="min-h-screen bg-amber-50/30">
+      <div className="max-w-[1400px] mx-auto px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="bg-red-600 text-white p-3 rounded-xl shadow-md">
+              <XCircle className="h-8 w-8" />
             </div>
-            <CardTitle className="text-2xl font-bold text-red-800">
-              Thanh toán bị hủy
-            </CardTitle>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <p className="text-gray-600">
-              Thanh toán của bạn đã bị hủy. Đơn hàng chưa được xử lý.
-            </p>
-            
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-sm text-amber-800">
-                <strong>Lưu ý:</strong> Các sản phẩm vẫn còn trong giỏ hàng của bạn. 
-                Bạn có thể tiếp tục mua sắm hoặc thử thanh toán lại.
+            <div>
+              <h1 className="text-3xl font-bold text-red-800">Thanh toán bị hủy</h1>
+              <p className="text-red-600 text-lg">Đơn hàng chưa được xử lý</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-white rounded-2xl shadow-lg">
+            <CardHeader className="text-center pb-6">
+              <div className="mx-auto w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                <XCircle className="w-12 h-12 text-red-600" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-red-800 mb-2">
+                Thanh toán đã bị hủy
+              </CardTitle>
+              <p className="text-amber-600 text-lg">
+                Đơn hàng của bạn chưa được xử lý. Bạn có thể thử lại bất cứ lúc nào.
               </p>
-            </div>
+            </CardHeader>
             
-            <div className="pt-4">
-              <h3 className="font-medium text-gray-900 mb-2">
-                Bạn có thể:
-              </h3>
-              <ul className="text-sm text-gray-600 text-left space-y-1">
-                <li>• Quay lại giỏ hàng để xem lại sản phẩm</li>
-                <li>• Thử lại với phương thức thanh toán khác</li>
-                <li>• Tiếp tục mua sắm thêm sản phẩm khác</li>
-              </ul>
-            </div>
-            
-            <div className="space-y-3 pt-4">
-              <Button 
-                onClick={() => navigate('/cart')} 
-                className="w-full"
-                size="lg"
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Quay lại giỏ hàng
-              </Button>
+            <CardContent className="space-y-6">
+              {/* Notice */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangleIcon className="h-5 w-5 text-amber-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-bold text-amber-800 mb-2">Lưu ý quan trọng</h3>
+                    <p className="text-sm text-amber-700">
+                      Các sản phẩm vẫn còn trong giỏ hàng của bạn. Bạn có thể tiếp tục mua sắm 
+                      hoặc thử thanh toán lại với phương thức khác.
+                    </p>
+                  </div>
+                </div>
+              </div>
               
-              <Button 
-                onClick={() => navigate('/checkout')} 
-                variant="outline" 
-                className="w-full"
-                size="lg"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Thử thanh toán lại
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Help Section */}
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Gặp khó khăn khi thanh toán? Liên hệ hỗ trợ:</p>
-          <p className="mt-1">
-            Email: support@bookstore.com | Điện thoại: 1900-xxxx
-          </p>
+              {/* What you can do */}
+              <div className="bg-amber-50 rounded-xl p-6">
+                <h3 className="font-bold text-amber-800 mb-4 flex items-center gap-2">
+                  <BookOpenIcon className="h-5 w-5" />
+                  Bạn có thể làm gì tiếp theo?
+                </h3>
+                <div className="space-y-3 text-sm text-amber-700">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4 text-amber-600" />
+                    <span>Quay lại giỏ hàng để xem lại sản phẩm đã chọn</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RefreshCwIcon className="h-4 w-4 text-amber-600" />
+                    <span>Thử lại với phương thức thanh toán khác</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <HomeIcon className="h-4 w-4 text-amber-600" />
+                    <span>Tiếp tục mua sắm thêm sản phẩm khác</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="space-y-4 pt-4">
+                <Button 
+                  onClick={() => navigate('/cart')} 
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg"
+                  size="lg"
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Quay lại giỏ hàng
+                </Button>
+                
+                <Button 
+                  onClick={() => navigate('/checkout')} 
+                  variant="outline" 
+                  className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 py-4 rounded-xl font-semibold text-lg"
+                  size="lg"
+                >
+                  <RefreshCwIcon className="mr-2 h-5 w-5" />
+                  Thử thanh toán lại
+                </Button>
+                
+                <Button 
+                  onClick={() => navigate('/')} 
+                  variant="outline" 
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 py-3 rounded-xl font-semibold"
+                  size="lg"
+                >
+                  <HomeIcon className="mr-2 h-4 w-4" />
+                  Tiếp tục mua sắm
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Support Info */}
+          <div className="mt-8 text-center">
+            <Card className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="font-bold text-amber-800 mb-4">Gặp khó khăn khi thanh toán?</h3>
+              <p className="text-sm text-amber-600 mb-4">
+                Chúng tôi sẵn sàng hỗ trợ bạn giải quyết vấn đề thanh toán
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center justify-center gap-2 text-amber-600">
+                  <MailIcon className="h-4 w-4" />
+                  <span>support@bookstore.com</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-amber-600">
+                  <PhoneIcon className="h-4 w-4" />
+                  <span>1900-xxxx</span>
+                </div>
+              </div>
+              <p className="text-xs text-amber-500 mt-3">
+                Hỗ trợ 24/7 - Chúng tôi luôn sẵn sàng giúp đỡ bạn
+              </p>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

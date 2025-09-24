@@ -99,11 +99,27 @@ const cartSlice = createSlice({
     updateCartItemSuccess: (state, action: PayloadAction<SingleResponse<null>>) => {
       state.isLoading = false;
       state.message = action.payload.status.message;
-      // We'll refresh the cart after successful update
+      // Update local state instead of fetching from server
+      // The quantity will be updated by the component's local state
+    },
+    updateCartItemQuantity: (state, action: PayloadAction<{ bookId: number; quantity: number }>) => {
+      const { bookId, quantity } = action.payload;
+      const item = state.items.find(item => item.book.id === bookId);
+      if (item) {
+        item.quantity = quantity;
+        // Recalculate totals
+        const totals = calculateTotals(state.items, state.selectedItems);
+        state.totalItems = totals.totalItems;
+        state.totalAmount = totals.totalAmount;
+        state.selectedTotalItems = totals.selectedTotalItems;
+        state.selectedTotalAmount = totals.selectedTotalAmount;
+      }
     },
     updateCartItemFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.message = action.payload;
+      // Note: We don't revert quantity here as the optimistic update was already applied
+      // The component should handle error display and user can retry
     },
 
     removeFromCartRequest: (state, _action: PayloadAction<RemoveFromCartRequest>) => {
@@ -177,6 +193,7 @@ export const {
   updateCartItemRequest,
   updateCartItemSuccess,
   updateCartItemFailure,
+  updateCartItemQuantity,
   removeFromCartRequest,
   removeFromCartSuccess,
   removeFromCartFailure,
