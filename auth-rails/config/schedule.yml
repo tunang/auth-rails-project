@@ -1,9 +1,18 @@
+#If product didnt sync with stripe, resync at 2ASM
 stripe_resync:
   cron: "0 2 * * *" # 2AM everyday
   class: "StripeResyncJob"
   queue: default
 
+#After soft delete 7 days, hard delete, check what gonna be delete in hard_delete_cron_job file
 hard_delete_cron:
   cron: "0 2 * * *" # every minute (for testing)
   class: "HardDeleteCronJob"
+  queue: default
+
+
+#Check which refresh tokens last more than 7 days, hard delete those
+revoke_refresh_tokens_job:
+  cron: "0 2 * * *" # every minute (for testing)
+  class: "RevokeRefreshTokensJob"
   queue: default

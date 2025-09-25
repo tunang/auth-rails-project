@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import {  useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Pagination, PaginationInfo, PerPageSelector } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getBooksByCategoryRequest } from "@/store/slices/bookSlice";
+import { getBooksByCategoryRequest, setPerPage as setBooksPerPage } from "@/store/slices/bookSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { BookOpenIcon, ShoppingCartIcon, UserIcon, TagIcon, HomeIcon, ChevronRightIcon, FilterIcon, SortAscIcon } from "lucide-react";
 import type { RootState } from "@/store";
@@ -12,12 +13,21 @@ import type { RootState } from "@/store";
 const CategoryProductPage = () => {
   const dispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { books, isLoading } = useSelector((state: RootState) => state.book);
+  const { books, isLoading, pagination, perPage } = useSelector((state: RootState) => state.book);
   const navigate = useNavigate(); 
 
   useEffect(() => {
-    dispatch(getBooksByCategoryRequest({ categoryId: Number(id), params: { page: 1, per_page: 10 } }));
+    dispatch(getBooksByCategoryRequest({ categoryId: Number(id), params: { page: pagination.current_page || 1, per_page: perPage } }));
   }, [id, dispatch]);
+
+  const handlePageChange = (page: number) => {
+    dispatch(getBooksByCategoryRequest({ categoryId: Number(id), params: { page, per_page: perPage } }));
+  };
+
+  const handlePerPageChange = (value: number) => {
+    dispatch(setBooksPerPage(value));
+    dispatch(getBooksByCategoryRequest({ categoryId: Number(id), params: { page: 1, per_page: value } }));
+  };
 
   const formatPrice = (price: number | string) => {
     const numPrice = typeof price === 'string' ? parseFloat(price) : price;
@@ -232,6 +242,24 @@ const CategoryProductPage = () => {
               <HomeIcon className="mr-2 h-4 w-4" />
               Về trang chủ
             </Button>
+          </div>
+        )}
+        {/* Pagination Controls */}
+        {pagination.total_pages > 1 && (
+          <div className="mt-8 flex items-center justify-between">
+            <PaginationInfo
+              currentPage={pagination.current_page}
+              totalCount={pagination.total_count}
+              perPage={perPage}
+            />
+            <div className="flex items-center gap-4">
+              <PerPageSelector perPage={perPage} onPerPageChange={handlePerPageChange} />
+              <Pagination
+                currentPage={pagination.current_page}
+                totalPages={pagination.total_pages}
+                onPageChange={handlePageChange}
+              />
+            </div>
           </div>
         )}
       </div>

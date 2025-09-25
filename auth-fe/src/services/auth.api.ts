@@ -30,7 +30,7 @@ export const authApi = {
 
   // Logout user
   async logout(): Promise<SingleResponse<{ status: string; message: string }>> {
-    const response = await apiAuth.delete('/sessions');
+    const response = await apiAuth.delete('/logout');
     return response.data;
   },
 

@@ -47,13 +47,31 @@ class Book < ApplicationRecord
     end
   end
 
+    def as_indexed_json(_options = {})
+    {
+      title: title,
+      price: price,
+      stock_quantity: stock_quantity,
+      authors: authors.map(&:name),
+      categories: categories.map(&:name),
+    }
+  end
+
   before_destroy :soft_delete_attachments, prepend: true
   before_restore :restore_attachments, prepend: true
 
   # 🔎 Tìm kiếm theo title
   def self.search_by_name(query)
     __elasticsearch__.search(
-      { query: { match_phrase_prefix: { title: query } } },
+      {
+        query: {
+          multi_match: {
+            query: query,
+            fields: %w[title categories authors],
+            type: 'phrase_prefix',
+          },
+        },
+      },
     ).records
   end
 
@@ -63,15 +81,7 @@ class Book < ApplicationRecord
     ).records
   end
 
-  def as_indexed_json(_options = {})
-    {
-      title: title,
-      price: price,
-      stock_quantity: stock_quantity,
-      authors: authors.map(&:name),
-      categories: categories.map(&:name),
-    }
-  end
+
 
   def destroy_fully!
     cover_image.purge if cover_image.attached?

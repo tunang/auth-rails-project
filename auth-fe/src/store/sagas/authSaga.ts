@@ -114,7 +114,6 @@ function* logoutSaga(): SagaIterator {
     toast.success("Đăng xuất thành công!", { id: toastId });
 
     // Navigate to login
-    window.location.href = "/auth/login";
   } catch (error: any) {
     // Still clear tokens even if API call fails
     localStorage.removeItem("access_token");

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Package, Calendar, MapPin, CreditCard, Eye, Home, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Pagination, PaginationInfo, PerPageSelector } from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -15,12 +16,12 @@ const UserOrdersPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { orders, isLoading, pagination } = useSelector(
+  const { orders, isLoading, pagination, perPage } = useSelector(
     (state: RootState) => state.order
   );
 
   useEffect(() => {
-    dispatch(getUserOrdersRequest({}));
+    dispatch(getUserOrdersRequest({ page: pagination.current_page || 1, per_page: perPage }));
   }, [dispatch]);
 
   const formatDate = (dateString: string) => {
@@ -49,6 +50,10 @@ const UserOrdersPage = () => {
 
   const handleViewOrder = (orderId: number) => {
     navigate(`/orders/${orderId}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    dispatch(getUserOrdersRequest({ page, per_page: perPage }));
   };
 
   if (isLoading && orders.length === 0) {
@@ -223,12 +228,25 @@ const UserOrdersPage = () => {
           </div>
         )}
 
-        {/* Pagination Info */}
+        {/* Pagination Controls */}
         {pagination.total_pages > 1 && (
-          <div className="mt-8 text-center">
-            <p className="text-sm text-amber-700">
-              Trang {pagination.current_page} / {pagination.total_pages}
-            </p>
+          <div className="mt-8 flex items-center justify-between">
+            <PaginationInfo
+              currentPage={pagination.current_page}
+              totalCount={pagination.total_count}
+              perPage={perPage}
+            />
+            <div className="flex items-center gap-4">
+              <PerPageSelector 
+                perPage={perPage} 
+                onPerPageChange={(value) => dispatch({ type: 'order/setPerPage', payload: value })}
+              />
+              <Pagination
+                currentPage={pagination.current_page}
+                totalPages={pagination.total_pages}
+                onPageChange={handlePageChange}
+              />
+            </div>
           </div>
         )}
       </div>

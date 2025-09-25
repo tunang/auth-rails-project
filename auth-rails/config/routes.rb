@@ -21,7 +21,7 @@ Rails
     #   post '/signup', to: 'auth#signup'
     #   post '/login', to: 'auth#login'
     # end
-
+    
     namespace :api do
       namespace :v1 do
         post 'login', to: 'sessions#create'

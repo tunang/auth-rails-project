@@ -4,6 +4,7 @@ class Api::V1::OrdersController < ApplicationController
   before_action :authorize_order, only: %i[show update destroy]
 
   include StripeLineItemHelper
+  include CartItemRemoval
 
   def index
     @orders =
@@ -110,12 +111,24 @@ class Api::V1::OrdersController < ApplicationController
         book = Book.find(item[:book_id])
         quantity = item[:quantity].to_i
 
+        if book.stock_quantity < quantity
+          raise ActiveRecord::RecordInvalid.new(order),
+                "Not enough stock for #{book.title}"
+        end
+
+        # ✅ Create order item
         OrderItem.create!(
           order: order,
           book: book,
           quantity: quantity,
           unit_price: book.price,
           total_price: book.price * quantity,
+        )
+
+        # ✅ Update book stock and sold count
+        book.update!(
+          stock_quantity: book.stock_quantity - quantity,
+          sold_count: book.sold_count + quantity,
         )
       end
 
@@ -140,6 +153,8 @@ class Api::V1::OrdersController < ApplicationController
 
       order.update!(stripe_session_id: session.id)
 
+      CancelUnpaidOrderJob.set(wait: 1.minutes).perform_later(order.id)
+      binding.pry
       #Remove bought items in cart
       remove_items_from_cart(cart_items)
 
@@ -237,21 +252,6 @@ class Api::V1::OrdersController < ApplicationController
   def remove; end
 
   private
-
-  def remove_items_from_cart(order_items_params)
-    order_items_params.each do |item_params|
-      book_id = item_params[:book_id] # or item_params["book_id"]
-      quantity = item_params[:quantity]
-      cart_item = current_user.cart_items.find_by(book_id: book_id)
-      next unless cart_item
-      
-      if cart_item.quantity > quantity.to_i
-        cart_item.update(quantity: cart_item.quantity - quantity.to_i)
-      else
-        cart_item.destroy
-      end
-    end
-  end
 
   def set_order
     @order = Order.find(params[:id])

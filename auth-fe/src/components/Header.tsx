@@ -10,10 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useAppSelector } from "@/hooks/useAppDispatch";
+import { useAppSelector, useAppDispatch } from "@/hooks/useAppDispatch";
 import { ListOrderedIcon, LogOutIcon, MapPinIcon, ShieldIcon, UserIcon, BookOpenIcon, SearchIcon, ShoppingCartIcon, MenuIcon, XIcon } from "lucide-react";
 import { categoryApi } from "@/services/category.api";
 import type { Category } from "@/types/category.type";
+import { logoutRequest } from "@/store/slices/authSlice";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +24,7 @@ const Header = () => {
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const {user, isAuthenticated} = useAppSelector((state) => state.auth);
 
@@ -33,6 +35,10 @@ const Header = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
+  };
+
+  const handleLogout = () => {
+    dispatch(logoutRequest());
   };
 
   // Fetch categories from API
@@ -261,7 +267,10 @@ const Header = () => {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600 p-3">
+                  <DropdownMenuItem 
+                    className="text-red-600 p-3 cursor-pointer"
+                    onClick={handleLogout}
+                  >
                     <LogOutIcon className="h-4 w-4 mr-2" /> Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -58,34 +58,58 @@ class Api::V1::SessionsController < ApplicationController
       render json: { error: 'Invalid refresh token' }, status: :unauthorized
     end
   end
-
-   # DELETE /api/v1/logout
+  # DELETE /api/v1/logout
   def destroy
-    # Option 1: Revoke only the current access token
     current_token = doorkeeper_token
-    current_token.revoke if current_token
-    
-    # Option 2: Revoke all tokens for this user (more secure for logout)
-    # This will log the user out from all devices/sessions
-    # user_tokens = Doorkeeper::AccessToken.where(
-    #   resource_owner_id: current_token&.resource_owner_id,
-    #   revoked_at: nil
-    # )
-    # user_tokens.update_all(revoked_at: Time.current)
-    
-    # render json: {
-    #   status: {
-    #     code: 200,
-    #     message: 'logout_success'
-    #   }
-    # }, status: :ok
+
+    if current_token
+      user = current_user
+      current_token.revoke
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'logout_success',
+               },
+               data: UserSerializer.new(user).as_json,
+               access_token: nil,
+               refresh_token: nil,
+             },
+             status: :ok
+    else
+      render json: {
+               status: {
+                 code: 401,
+                 message: 'logout_failed',
+               },
+               data: nil,
+               errors: ['No active session found'],
+             },
+             status: :unauthorized
+    end
   rescue => e
     render json: {
-      status: {
-        code: 500,
-        message: 'logout_failed'
-      },
-      errors: [e.message]
-    }, status: :internal_server_error
+             status: {
+               code: 500,
+               message: 'logout_failed',
+             },
+             data: nil,
+             errors: [e.message],
+           },
+           status: :internal_server_error
   end
+
+  # Option 2: Revoke all tokens for this user (more secure for logout)
+  # This will log the user out from all devices/sessions
+  # user_tokens = Doorkeeper::AccessToken.where(
+  #   resource_owner_id: current_token&.resource_owner_id,
+  #   revoked_at: nil
+  # )
+  # user_tokens.update_all(revoked_at: Time.current)
+
+  # render json: {
+  #   status: {
+  #     code: 200,
+  #     message: 'logout_success'
+  #   }
+  # }, status: :ok
 end
