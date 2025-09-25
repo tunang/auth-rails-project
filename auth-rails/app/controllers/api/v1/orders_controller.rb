@@ -154,7 +154,6 @@ class Api::V1::OrdersController < ApplicationController
       order.update!(stripe_session_id: session.id)
 
       CancelUnpaidOrderJob.set(wait: 1.minutes).perform_later(order.id)
-      binding.pry
       #Remove bought items in cart
       remove_items_from_cart(cart_items)
 
