@@ -1,24 +1,21 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
 
-Things you may want to cover:
+1. rails db:migrate
 
-* Ruby version
 
-* System dependencies
 
-* Configuration
+2. Set default WebApp for login
+Rails c 
 
-* Database creation
+Doorkeeper::Application.create!(
+  name: "WebApp",
+  redirect_uri: "http://localhost",
+  scopes: ""
+)
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+3. Set kibana user 
+docker compose up -d elasticsearch
+docker exec -it es-auth-rails-project bash
+bin/elasticsearch-reset-password -u <USERNAME> -i
+it will ask you for a new password
