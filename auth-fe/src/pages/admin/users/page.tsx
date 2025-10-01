@@ -1,45 +1,41 @@
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { useDispatch, useSelector } from "react-redux";
-import { getBooksRequest, setPerPage } from "@/store/slices/bookSlice";
+import { getUsersRequest, setPerPage } from "@/store/slices/userSlice";
 import React, { useCallback, useEffect, useState } from "react";
 import type { RootState } from "@/store";
-import { toast } from "sonner";
-import CreateBookModal from "./modal/create-book-modal";
-import DeletedBooksModal from "./modal/deleted-books-modal";
-import { Button } from "@/components/ui/button";
 import { Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-const BooksPage = () => {
-  const header = "Sách";
+const UsersPage = () => {
+  const header = "Người dùng";
   const dispatch = useDispatch();
   const [searchParam, setSearchParam] = React.useState("");
   const [searchInput, setSearchInput] = useState(searchParam);
 
   const {
-    books: data,
+    users: data,
     pagination,
-    message,
     perPage,
-  } = useSelector((state: RootState) => state.book);
+  } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     dispatch(
-      getBooksRequest({ page: 1, per_page: perPage, search: searchParam })
+      getUsersRequest({ page: 1, per_page: perPage, search: searchParam })
     );
   }, [dispatch, perPage, searchParam]);
 
   const handlePageChange = (page: number) => {
     dispatch(
-      getBooksRequest({ page, per_page: perPage, search: searchParam })
+      getUsersRequest({ page, per_page: perPage, search: searchParam })
     );
   };
 
   const handlePerPageChange = (newPerPage: number) => {
     dispatch(setPerPage(newPerPage));
     dispatch(
-      getBooksRequest({
+      getUsersRequest({
         page: 1,
         per_page: newPerPage,
         search: searchParam,
@@ -49,30 +45,8 @@ const BooksPage = () => {
 
   const handleSearchParamChange = (search: string) => {
     setSearchParam(search);
-    dispatch(getBooksRequest({ page: 1, per_page: perPage, search }));
+    dispatch(getUsersRequest({ page: 1, per_page: perPage, search }));
   };
-
-  React.useEffect(() => {
-    if (message === "book_created_successfully") {
-      toast.success("Thêm sách thành công");
-    }
-
-    if (message === "book_updated_successfully") {
-      toast.success("Cập nhật sách thành công");
-    }
-
-    if (message === "book_deleted_successfully") {
-      toast.success("Xóa sách thành công");
-    }
-
-    if (message === "validation_error") {
-      toast.error("Thêm sách thất bại, vui lòng kiểm tra lại thông tin");
-    }
-
-    if (message === "update_book_failure") {
-      toast.error("Cập nhật sách thất bại");
-    }
-  }, [message]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -82,7 +56,7 @@ const BooksPage = () => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           handleSearchParamChange(searchTerm);
-        }, 1000);
+        }, 300);
       };
     })(),
     [handleSearchParamChange]
@@ -94,16 +68,12 @@ const BooksPage = () => {
         <div>
           <div className="flex justify-between items-center border-b border-gray-200 gap-4 pb-2">
             <h1 className="text-2xl font-bold">{header}</h1>
-            <div className="flex gap-2">
-              <CreateBookModal />
-              <DeletedBooksModal />
-            </div>
           </div>
 
           <div className="flex justify-between py-4">
             <div className="flex gap-2">
               <Input
-                placeholder="Tìm kiếm sách..."
+                placeholder="Tìm kiếm người dùng..."
                 value={searchInput}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -124,7 +94,7 @@ const BooksPage = () => {
         <DataTable
           columns={columns}
           data={data}
-          header="Books"
+          header="Users"
           pagination={pagination}
           perPage={perPage}
           searchParam={searchParam}
@@ -136,4 +106,4 @@ const BooksPage = () => {
   );
 };
 
-export default BooksPage;
+export default UsersPage;

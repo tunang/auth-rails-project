@@ -6,6 +6,7 @@ import { bookSaga } from "./bookSaga";
 import { watchOrderSaga } from "./orderSaga";
 import { watchCartSaga } from "./cartSaga";
 import { watchAddressSaga } from "./addressSaga";
+import { watchUserSaga } from "./userSaga";
 
 export function* rootSaga() {
   yield all([
@@ -16,5 +17,6 @@ export function* rootSaga() {
     watchOrderSaga(),
     watchCartSaga(),
     watchAddressSaga(),
+    watchUserSaga(),
   ]);
 }

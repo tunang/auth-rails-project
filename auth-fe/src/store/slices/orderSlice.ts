@@ -10,6 +10,7 @@ interface OrderState {
   isLoading: boolean;
   pagination: Pagination;
   perPage: number;
+  paymentUrl: string | null;
 }
 
 const initialState: OrderState = {
@@ -25,6 +26,7 @@ const initialState: OrderState = {
     total_count: 0,
   },
   perPage: 10,
+  paymentUrl: null,
 };
 
 const orderSlice = createSlice({
@@ -129,6 +131,28 @@ const orderSlice = createSlice({
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
     },
+
+    payOrderRequest: (state, _action: PayloadAction<string>) => {
+      state.isLoading = true;
+      state.message = null;
+    },
+    payOrderSuccess: (state, action: PayloadAction<{ order: Order; payment_url: string }>) => {
+      state.isLoading = false;
+      // Update order in the list with new stripe_session_id
+      state.orders = state.orders.map((order) =>
+        order.id === action.payload.order.id ? action.payload.order : order
+      );
+      // Update current order if it's the same one
+      if (state.currentOrder?.id === action.payload.order.id) {
+        state.currentOrder = action.payload.order;
+      }
+      state.paymentUrl = action.payload.payment_url;
+      state.message = "Tạo phiên thanh toán thành công";
+    },
+    payOrderFailure: (state, action: PayloadAction<string>) => {
+      state.isLoading = false;
+      state.message = action.payload;
+    },
   },
 });
 
@@ -151,6 +175,9 @@ export const {
   updateOrderStatusFailure,
   setPerPage,
   clearCurrentOrder,
+  payOrderRequest,
+  payOrderSuccess,
+  payOrderFailure,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

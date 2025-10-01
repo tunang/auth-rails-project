@@ -7,7 +7,7 @@ import { Pagination, PaginationInfo, PerPageSelector } from "@/components/ui/pag
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { getUserOrdersRequest } from "@/store/slices/orderSlice";
+import { getUserOrdersRequest, payOrderRequest } from "@/store/slices/orderSlice";
 import { OrderStatusLabels, OrderStatusColors } from "@/types/order.type";
 import type { RootState } from "@/store";
 import type { Order } from "@/types/order.type";
@@ -16,13 +16,21 @@ const UserOrdersPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { orders, isLoading, pagination, perPage } = useSelector(
+  const { orders, isLoading, pagination, perPage, message, paymentUrl } = useSelector(
     (state: RootState) => state.order
   );
 
   useEffect(() => {
     dispatch(getUserOrdersRequest({ page: pagination.current_page || 1, per_page: perPage }));
   }, [dispatch]);
+
+  // Listen for payment success and redirect to payment URL
+  useEffect(() => {
+    if (message === "Tạo phiên thanh toán thành công" && paymentUrl) {
+      // Redirect to Stripe checkout
+      window.location.href = paymentUrl;
+    }
+  }, [message, paymentUrl]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -50,6 +58,14 @@ const UserOrdersPage = () => {
 
   const handleViewOrder = (orderId: number) => {
     navigate(`/orders/${orderId}`);
+  };
+
+  const handlePaymentOrder = async (stripeSessionId: string) => {
+    try {
+      dispatch(payOrderRequest(stripeSessionId));
+    } catch (error) {
+      console.error('Lỗi khi tạo phiên thanh toán:', error);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -212,6 +228,17 @@ const UserOrdersPage = () => {
                         <CreditCard className="h-4 w-4" />
                         <span>Cập nhật: {formatDate(order.updated_at)}</span>
                       </div>
+                      <div className="flex items-center gap-2">
+                        {order.status === 'pending' && (
+                      <Button
+                        onClick={() => handlePaymentOrder(order.stripe_session_id)}
+                        className="bg-amber-600 hover:bg-amber-700 text-white"
+                        size="sm"
+                      >
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Thanh toán
+                      </Button>
+                      )}
                       <Button
                         onClick={() => handleViewOrder(order.id)}
                         className="bg-amber-600 hover:bg-amber-700 text-white"
@@ -220,6 +247,7 @@ const UserOrdersPage = () => {
                         <Eye className="mr-2 h-4 w-4" />
                         Xem chi tiết
                       </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

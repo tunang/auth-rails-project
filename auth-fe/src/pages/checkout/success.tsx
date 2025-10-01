@@ -21,18 +21,7 @@ const CheckoutSuccessPage = () => {
   return (
     <div className="min-h-screen bg-amber-50/30">
       <div className="max-w-[1400px] mx-auto px-8 py-8">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="bg-green-600 text-white p-3 rounded-xl shadow-md">
-              <CheckCircle className="h-8 w-8" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-green-800">Thanh toán thành công!</h1>
-              <p className="text-green-600 text-lg">Cảm ơn bạn đã đặt hàng</p>
-            </div>
-          </div>
-        </div>
+
 
         <div className="max-w-2xl mx-auto">
           <Card className="bg-white rounded-2xl shadow-lg">
@@ -50,18 +39,7 @@ const CheckoutSuccessPage = () => {
             
             <CardContent className="space-y-6">
               {/* Session ID */}
-              {sessionId && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BookOpenIcon className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm font-semibold text-amber-800">Mã phiên thanh toán:</span>
-                  </div>
-                  <p className="text-xs font-mono break-all text-amber-700 bg-white p-2 rounded border">
-                    {sessionId}
-                  </p>
-                </div>
-              )}
-              
+
               {/* Order Info */}
               <div className="bg-amber-50 rounded-xl p-6">
                 <h3 className="font-bold text-amber-800 mb-4 flex items-center gap-2">

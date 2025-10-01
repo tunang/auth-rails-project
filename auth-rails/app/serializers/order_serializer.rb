@@ -15,7 +15,8 @@ class OrderSerializer
       created_at: order.created_at,
       updated_at: order.updated_at,
       user: user_data,
-      shipping_address: shipping_address_data
+      shipping_address: shipping_address_data,
+      stripe_session_id: order.stripe_session_id
     }
   end
 

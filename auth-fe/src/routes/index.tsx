@@ -14,6 +14,7 @@ import BooksPage from "@/pages/admin/books/page";
 import CategoriesPage from "@/pages/admin/categories/page";
 import AuthorsPage from "@/pages/admin/authors/page";
 import OrdersPage from "@/pages/admin/orders/page";
+import UsersPage from "@/pages/admin/users/page";
 import CartPage from "@/pages/cart/page";
 import AddressPage from "@/pages/address/page";
 import CheckoutPage from "@/pages/checkout";
@@ -65,7 +66,7 @@ const router = createBrowserRouter([
       //   element: <SearchResults />,
       // },
       {
-        path: 'book/:id',
+        path: 'book/:slug',
         element: <BookDetailPage />,
       },
       {
@@ -183,6 +184,10 @@ const router = createBrowserRouter([
       {
         path: 'orders',
         element: <OrdersPage />
+      },
+      {
+        path: 'users',
+        element: <UsersPage />
       }
     ]
   }

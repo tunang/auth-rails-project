@@ -8,7 +8,8 @@ import {
   Wrench, 
   LogOut,
   ArrowLeft,
-  User
+  User,
+  Users
 } from "lucide-react"
 
 import {
@@ -95,6 +96,11 @@ const managementItems = [
     title: "Orders",
     url: "/admin/orders",
     icon: ShoppingCartIcon,
+  },
+  {
+    title: "Users",
+    url: "/admin/users",
+    icon: Users,
   },
 ];
 

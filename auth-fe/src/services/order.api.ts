@@ -43,5 +43,9 @@ export const orderApi = {
       const response = await api.get(`/user/orders/${id}`);
       return response.data;
     },
+    payOrder: async (stripeSessionId: string): Promise<{ status: { code: number; message: string }; data: { order: Order; payment_url: string } }> => {
+      const response = await api.post(`/user/orders/pay`, { stripe_session_id: stripeSessionId });
+      return response.data;
+    },
   },
 };

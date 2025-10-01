@@ -152,7 +152,7 @@ const CategoryProductPage = () => {
               <Card 
                 key={book.id} 
                 className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
-                onClick={() => navigate(`/book/${book.id}`)}
+                onClick={() => navigate(`/book/${book.slug}`)}
               >
                 <div className="relative">
                   <img

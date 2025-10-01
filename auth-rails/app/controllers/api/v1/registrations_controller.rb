@@ -4,7 +4,7 @@ class Api::V1::RegistrationsController < ApplicationController
   def create
 
     user = User.new(user_params)
-
+    
     if user.save
       # Devise auto send verify email after account, if keep this line, email's sent twice
       # user.send_confirmation_instructions

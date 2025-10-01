@@ -9,18 +9,6 @@ const CheckoutCancelPage = () => {
   return (
     <div className="min-h-screen bg-amber-50/30">
       <div className="max-w-[1400px] mx-auto px-8 py-8">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="bg-red-600 text-white p-3 rounded-xl shadow-md">
-              <XCircle className="h-8 w-8" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-red-800">Thanh toán bị hủy</h1>
-              <p className="text-red-600 text-lg">Đơn hàng chưa được xử lý</p>
-            </div>
-          </div>
-        </div>
 
         <div className="max-w-2xl mx-auto">
           <Card className="bg-white rounded-2xl shadow-lg">
@@ -32,7 +20,7 @@ const CheckoutCancelPage = () => {
                 Thanh toán đã bị hủy
               </CardTitle>
               <p className="text-amber-600 text-lg">
-                Đơn hàng của bạn chưa được xử lý. Bạn có thể thử lại bất cứ lúc nào.
+                Đơn hàng của bạn chưa được thanh toán. Hãy vào mục đơn hàng của tôi và thanh toán trong vòng 30 phút.
               </p>
             </CardHeader>
             
@@ -44,8 +32,7 @@ const CheckoutCancelPage = () => {
                   <div>
                     <h3 className="font-bold text-amber-800 mb-2">Lưu ý quan trọng</h3>
                     <p className="text-sm text-amber-700">
-                      Các sản phẩm vẫn còn trong giỏ hàng của bạn. Bạn có thể tiếp tục mua sắm 
-                      hoặc thử thanh toán lại với phương thức khác.
+                      Nếu không thanh toán trong vòng 30 phút, đơn hàng sẽ tự động bị hủy.
                     </p>
                   </div>
                 </div>
@@ -76,23 +63,15 @@ const CheckoutCancelPage = () => {
               {/* Action Buttons */}
               <div className="space-y-4 pt-4">
                 <Button 
-                  onClick={() => navigate('/cart')} 
+                  onClick={() => navigate('/orders')} 
                   className="w-full bg-amber-600 hover:bg-amber-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg"
                   size="lg"
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  Quay lại giỏ hàng
+                  Đến đơn hàng của tôi
                 </Button>
                 
-                <Button 
-                  onClick={() => navigate('/checkout')} 
-                  variant="outline" 
-                  className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 py-4 rounded-xl font-semibold text-lg"
-                  size="lg"
-                >
-                  <RefreshCwIcon className="mr-2 h-5 w-5" />
-                  Thử thanh toán lại
-                </Button>
+      
                 
                 <Button 
                   onClick={() => navigate('/')} 

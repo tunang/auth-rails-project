@@ -154,6 +154,7 @@ class Api::V1::OrdersController < ApplicationController
       order.update!(stripe_session_id: session.id)
 
       CancelUnpaidOrderJob.set(wait: 1.minutes).perform_later(order.id)
+
       #Remove bought items in cart
       remove_items_from_cart(cart_items)
 
@@ -191,6 +192,66 @@ class Api::V1::OrdersController < ApplicationController
     render json: { error: e.message }, status: :unprocessable_entity
   rescue => e
     render json: { error: e.message }, status: :bad_request
+  end
+
+  # orders_controller.rb
+  def pay
+    order =
+      current_user.orders.find_by(stripe_session_id: params[:stripe_session_id])
+
+    unless order&.pending? && order.payment_status == 'pending'
+      return(
+        render json: {
+                 status: {
+                   code: 422,
+                   message: 'order_cannot_be_paid',
+                 },
+                 errors: ['Order is not payable'],
+               },
+               status: :unprocessable_entity
+      )
+    end
+
+    session = Stripe::Checkout::Session.retrieve(order.stripe_session_id)
+
+    if session && session.status == 'open'
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'payment_session_reused',
+               },
+               data: {
+                 order: OrderSerializer.new(order).as_json,
+                 payment_url: session.url,
+               },
+             },
+             status: :ok
+    else
+      # Session expired -> create a new one
+      new_session =
+        Stripe::Checkout::Session.create(
+          payment_method_types: ['card'],
+          line_items: StripeService.new.build_line_items_from_order(order),
+          mode: 'payment',
+          success_url:
+            "#{ENV['FRONTEND_URL']}/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+          cancel_url: "#{ENV['FRONTEND_URL']}/checkout/cancel",
+        )
+
+      order.update!(stripe_session_id: new_session.id)
+
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'payment_session_created',
+               },
+               data: {
+                 order: OrderSerializer.new(order).as_json,
+                 payment_url: new_session.url,
+               },
+             },
+             status: :ok
+    end
   end
 
   def update

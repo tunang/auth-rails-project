@@ -42,25 +42,92 @@ class Book < ApplicationRecord
       indexes :title, type: :text
       indexes :price, type: :float
       indexes :stock_quantity, type: :integer
-      indexes :authors, type: :text
-      indexes :categories, type: :text
+      indexes :authors, type: :keyword # 👈 use keyword for filtering
+      indexes :categories, type: :keyword # 👈 use keyword for filtering
+
+      indexes :created_at, type: :date
     end
   end
 
-    def as_indexed_json(_options = {})
+  def as_indexed_json(_options = {})
     {
       title: title,
       price: price,
       stock_quantity: stock_quantity,
       authors: authors.map(&:name),
       categories: categories.map(&:name),
+      created_at: created_at,
     }
   end
 
-  before_destroy :soft_delete_attachments, prepend: true
-  before_restore :restore_attachments, prepend: true
+  # 🔎 Advanced search with filters & sorting
+  def self.search_books(
+    query: nil,
+    category: nil,
+    author: nil,
+    min_price: nil,
+    max_price: nil,
+    in_stock: nil,
+    sort_by: nil
+  )
+    must_conditions = []
+    filter_conditions = []
 
-  # 🔎 Tìm kiếm theo title
+    # Full-text search across multiple fields
+    if query.present?
+      must_conditions << {
+        multi_match: {
+          query: query,
+          fields: %w[title authors categories],
+          type: 'phrase_prefix',
+        },
+      }
+    end
+
+    # Filters
+    if category.present?
+      filter_conditions << { terms: { categories: [category] } }
+    end
+    filter_conditions << { terms: { authors: [author] } } if author.present?
+    if min_price.present?
+      filter_conditions << { range: { price: { gte: min_price.to_f } } }
+    end
+    if max_price.present?
+      filter_conditions << { range: { price: { lte: max_price.to_f } } }
+    end
+    if in_stock.present?
+      filter_conditions << { range: { stock_quantity: { gt: 0 } } }
+    end
+
+    # Sorting
+    sort =
+      case sort_by
+      when 'price_asc'
+        [{ price: { order: 'asc' } }]
+      when 'price_desc'
+        [{ price: { order: 'desc' } }]
+      when 'title'
+        [{ title: { order: 'asc' } }]
+      when 'newest'
+        [{ created_at: { order: 'desc' } }]
+      else
+        [{ _score: { order: 'desc' } }] # default: relevance
+      end
+
+    __elasticsearch__.search(
+      {
+        query: {
+          bool: {
+            must: must_conditions,
+            filter: filter_conditions,
+          },
+        },
+        sort: sort,
+      },
+    )
+  end
+
+  # legacy simple search
   def self.search_by_name(query)
     __elasticsearch__.search(
       {
@@ -75,14 +142,6 @@ class Book < ApplicationRecord
     ).records
   end
 
-  def self.search_by_category(query)
-    __elasticsearch__.search(
-      { query: { match_phrase_prefix: { categories: query } } },
-    ).records
-  end
-
-
-
   def destroy_fully!
     cover_image.purge if cover_image.attached?
     sample_pages.purge if sample_pages.attached?
@@ -94,17 +153,13 @@ class Book < ApplicationRecord
   def soft_delete_attachments
     return unless persisted?
 
-    # Với has_one_attached → cần .attachment
     cover_image&.attachment&.destroy if cover_image.attached?
-
-    # Với has_many_attached → mỗi phần tử đã là attachment → không cần .attachment
     sample_pages&.each(&:destroy) if sample_pages.attached?
   end
 
   def restore_attachments
     return unless deleted_at
 
-    # Khôi phục attachment và blob
     restore_attachment(:cover_image)
     restore_attachments_collection(:sample_pages)
   end
@@ -119,8 +174,6 @@ class Book < ApplicationRecord
     return unless att&.deleted?
 
     att.restore
-
-    # 🔥 DÙNG `unscoped` ĐỂ LẤY BLOB KỂ CẢ KHI ĐÃ SOFT-DELETE
     blob = ActiveStorage::Blob.unscoped.find_by(id: att.blob_id)
     blob&.restore if blob&.deleted?
   end
@@ -132,12 +185,11 @@ class Book < ApplicationRecord
         record_id: id,
         name: name.to_s,
       )
+
     attachments.each do |att|
       next unless att.deleted?
 
       att.restore
-
-      # 🔥 DÙNG `unscoped` CHO BLOB
       blob = ActiveStorage::Blob.unscoped.find_by(id: att.blob_id)
       blob&.restore if blob&.deleted?
     end

@@ -45,6 +45,7 @@ export interface Order {
   user: OrderUser;
   shipping_address: ShippingAddress;
   order_items?: OrderItem[]; // Only available in detail view
+  stripe_session_id: string;
 }
 
 export const OrderStatus = {

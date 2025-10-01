@@ -39,6 +39,7 @@ Rails
         
 
         scope :admin do
+          resources :users
           resources :authors
           get 'authors/deleted/list', to: 'authors#deleted'
           post 'authors/:id/restore', to: 'authors#restore'
@@ -53,11 +54,11 @@ Rails
           get 'books/deleted/list', to: 'books#deleted'
           post 'books/:id/restore', to: 'books#restore'
 
-
-
           get 'orders/get_all', to: 'orders#get_all'
           patch 'orders/:id', to: 'orders#update'
           get 'orders/:id', to: 'orders#show'
+
+          get 'static', to: 'stats#statics'
         end
 
         scope :user do
@@ -73,8 +74,11 @@ Rails
           # /user/addresses route
           resources :addresses
 
+          
+
           # /user/orders route
           resources :orders
+          post '/orders/pay', to: 'orders#pay'
 
           # /user/cart route
           get '/cart', to: 'carts#show'
@@ -85,7 +89,14 @@ Rails
 
           # user/me
           get '/me', to: 'users#me'
+
+
+
+          
         end
+
+        post '/stripe/webhook', to: 'stripe_webhooks#receive'
+
 
         mount ActionCable.server => "/cable"
       end

@@ -15,6 +15,9 @@ import {
   updateOrderStatusRequest,
   updateOrderStatusSuccess,
   updateOrderStatusFailure,
+  payOrderRequest,
+  payOrderSuccess,
+  payOrderFailure,
 } from "../slices/orderSlice";
 import { orderApi } from "@/services/order.api";
 import type { ListResponse, SingleResponse, PaginationParams } from "@/types";
@@ -69,10 +72,21 @@ export function* updateOrderStatusSaga(action: PayloadAction<{ id: number; data:
     }
 }
 
+export function* payOrderSaga(action: PayloadAction<string>) {
+    try {
+        const stripeSessionId = action.payload;
+        const response: { status: { code: number; message: string }; data: { order: Order; payment_url: string } } = yield call(orderApi.user.payOrder, stripeSessionId);
+        yield put(payOrderSuccess(response.data));
+    } catch (error: any) {
+        yield put(payOrderFailure(error.response?.data?.status?.message || error.message));
+    }
+}
+
 export function* watchOrderSaga() {
     yield takeLatest(getOrdersRequest.type, getOrdersSaga);
     yield takeLatest(getUserOrdersRequest.type, getUserOrdersSaga);
     yield takeLatest(getOrderDetailRequest.type, getOrderDetailSaga);
     yield takeLatest(getUserOrderDetailRequest.type, getUserOrderDetailSaga);
     yield takeLatest(updateOrderStatusRequest.type, updateOrderStatusSaga);
+    yield takeLatest(payOrderRequest.type, payOrderSaga);
 }

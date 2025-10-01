@@ -8,6 +8,7 @@ import bookReducer from './slices/bookSlice';
 import orderReducer from './slices/orderSlice';
 import cartReducer from './slices/cartSlice';
 import addressReducer from './slices/addressSlice';
+import userReducer from './slices/userSlice';
 
 // Create saga middleware
 const sagaMiddleware = createSagaMiddleware();
@@ -22,6 +23,7 @@ export const store = configureStore({
     order: orderReducer,
     cart: cartReducer,
     address: addressReducer,
+    user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

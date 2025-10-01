@@ -1,21 +1,33 @@
 class Api::V1::BooksController < ApplicationController
-  # before_action :doorkeeper_authorize!, except: %i[index show]
   before_action :doorkeeper_authorize!, except: %i[index show]
   before_action :book_job, only: %i[show update destroy]
 
   def index
     authorize Book, :index?
 
-    if params[:search].present?
-      # 🔎 Search với Elasticsearch
-      books =
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 5).to_i
+
+    if filter_params.except(:page, :per_page).present?
+      # 🔎 Use Elasticsearch for search + filter + sort
+      search_results =
         Book
-          .search_by_name(params[:search])
-          .page(params[:page] || 1)
-          .per(params[:per_page] || 5)
+          .search_books(
+            query: params[:query] || params[:search],
+            category: params[:category],
+            author: params[:author],
+            min_price: params[:min_price],
+            max_price: params[:max_price],
+            in_stock: params[:in_stock],
+            sort_by: params[:sort_by],
+          )
+          .page(page)
+          .per(per_page)
+
+      books = search_results.records.includes(:authors, :categories)
     else
-      # 📚 Lấy từ DB bình thường
-      books =
+      # 📚 Fall back to DB if no filters/search applied
+      search_results =
         Book
           .includes(
             :authors,
@@ -23,8 +35,10 @@ class Api::V1::BooksController < ApplicationController
             cover_image_attachment: :blob,
             sample_pages_attachments: :blob,
           )
-          .page(params[:page] || 1)
-          .per(params[:per_page] || 5)
+          .page(page)
+          .per(per_page)
+
+      books = search_results
     end
 
     render json: {
@@ -34,11 +48,11 @@ class Api::V1::BooksController < ApplicationController
              },
              data: books.map { |book| BookSerializer.new(book).as_json },
              pagination: {
-               current_page: books.current_page,
-               next_page: books.next_page,
-               prev_page: books.prev_page,
-               total_pages: books.total_pages,
-               total_count: books.total_count,
+               current_page: search_results.current_page,
+               next_page: search_results.next_page,
+               prev_page: search_results.prev_page,
+               total_pages: search_results.total_pages,
+               total_count: search_results.total_count,
              },
            },
            status: :ok
@@ -77,7 +91,6 @@ class Api::V1::BooksController < ApplicationController
 
   def deleted
     authorize Book, :deleted?
-
     deleted_books =
       Book.only_deleted.page(params[:page]).per(params[:per_page] || 10)
 
@@ -94,42 +107,6 @@ class Api::V1::BooksController < ApplicationController
                prev_page: deleted_books.prev_page,
                total_pages: deleted_books.total_pages,
                total_count: deleted_books.total_count,
-             },
-           },
-           status: :ok
-  end
-
-  def search
-    page = (params[:page] || 1).to_i
-    per_page = (params[:per_page] || 5).to_i
-
-    # search_result = Book.search(params[:q], page: page, per_page: per_page)
-    search_result = Book.search(params[:search])
-
-    books =
-      search_result
-        .records
-        .includes(
-          :authors,
-          :categories,
-          cover_image_attachment: :blob,
-          sample_pages_attachments: :blob,
-        )
-        .page(params[:page] || 1)
-        .per(params[:per_page] || 5)
-
-    render json: {
-             status: {
-               code: 200,
-               message: 'Books search successfully',
-             },
-             data: books.map { |book| BookSerializer.new(book).as_json },
-             meta: {
-               current_page: books.current_page,
-               next_page: books.next_page,
-               prev_page: books.prev_page,
-               total_pages: books.total_pages,
-               total_count: books.total_count,
              },
            },
            status: :ok
@@ -237,9 +214,9 @@ class Api::V1::BooksController < ApplicationController
   def restore
     book = Book.only_deleted.find(params[:id])
     authorize :book, :restore?
+
     if book.restore(recursive: true)
-      # đồng bộ lại Elasticsearch
-      book.__elasticsearch__.index_document
+      book.__elasticsearch__.index_document # reindex ES
       render json: {
                status: {
                  code: 200,
@@ -264,6 +241,7 @@ class Api::V1::BooksController < ApplicationController
     @book = Book.friendly.find(params[:id])
   end
 
+  # ✅ Strong params for create/update
   def book_params
     params.permit(
       :title,
@@ -278,6 +256,22 @@ class Api::V1::BooksController < ApplicationController
       sample_pages: [],
       author_ids: [],
       category_ids: [],
+    )
+  end
+
+  # ✅ Strong params for search/filter/sort
+  def filter_params
+    params.permit(
+      :query,
+      :search,
+      :category,
+      :author,
+      :min_price,
+      :max_price,
+      :in_stock,
+      :sort_by,
+      :page,
+      :per_page,
     )
   end
 end

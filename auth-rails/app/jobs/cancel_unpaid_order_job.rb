@@ -17,7 +17,7 @@ class CancelUnpaidOrderJob < ApplicationJob
       end
 
       # 2. Cancel the order
-      order.update!(status: :cancelled, payment_status: "failed")
+      order.update!(status: :cancelled, payment_status: "failed", stripe_session_id: nil)
 
       Rails.logger.info "✅ Order ##{order.id} canceled & stock restored"
     end

@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 
 const BookDetailPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState(1);
@@ -49,10 +49,10 @@ const BookDetailPage = () => {
   );
 
   useEffect(() => {
-    if (id) {
-      dispatch(getBookDetailRequest(id));
+    if (slug) {
+      dispatch(getBookDetailRequest(slug));
     }
-  }, [dispatch, id]);
+  }, [dispatch, slug]);
 
   useEffect(() => {
     if (cartMessage) {

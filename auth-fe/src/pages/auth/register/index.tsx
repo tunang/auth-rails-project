@@ -80,7 +80,7 @@ const RegisterPage = () => {
     }
 
     if (message === "confirmation_email_failed") {
-      toast.error("Email không hợp lệ. Vui lòng thử lại.", { 
+      toast.error("Email đã được xác thực. Vui lòng đăng nhập.", { 
         duration: 5000 
       });
     }
