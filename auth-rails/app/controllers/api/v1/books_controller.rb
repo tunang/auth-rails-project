@@ -9,7 +9,6 @@ class Api::V1::BooksController < ApplicationController
     per_page = (params[:per_page] || 5).to_i
 
     if filter_params.except(:page, :per_page).present?
-      # 🔎 Use Elasticsearch for search + filter + sort
       search_results =
         Book
           .search_books(
@@ -20,11 +19,18 @@ class Api::V1::BooksController < ApplicationController
             max_price: params[:max_price],
             in_stock: params[:in_stock],
             sort_by: params[:sort_by],
+            featured: params[:featured],
           )
           .page(page)
           .per(per_page)
 
-      books = search_results.records.includes(:authors, :categories)
+      books =
+        search_results.records.includes(
+          :authors,
+          :categories,
+          cover_image_attachment: :blob,
+          sample_pages_attachments: :blob
+        )
     else
       # 📚 Fall back to DB if no filters/search applied
       search_results =
@@ -270,6 +276,7 @@ class Api::V1::BooksController < ApplicationController
       :max_price,
       :in_stock,
       :sort_by,
+      :featured,
       :page,
       :per_page,
     )
