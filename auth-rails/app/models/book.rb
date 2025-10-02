@@ -44,8 +44,8 @@ class Book < ApplicationRecord
       indexes :stock_quantity, type: :integer
       indexes :authors, type: :keyword # 👈 use keyword for filtering
       indexes :categories, type: :keyword # 👈 use keyword for filtering
-
       indexes :created_at, type: :date
+      indexes :featured, type: :boolean
     end
   end
 
@@ -57,6 +57,7 @@ class Book < ApplicationRecord
       authors: authors.map(&:name),
       categories: categories.map(&:name),
       created_at: created_at,
+      featured: featured,
     }
   end
 
@@ -68,7 +69,8 @@ class Book < ApplicationRecord
     min_price: nil,
     max_price: nil,
     in_stock: nil,
-    sort_by: nil
+    sort_by: nil,
+    featured: nil
   )
     must_conditions = []
     filter_conditions = []
@@ -78,7 +80,7 @@ class Book < ApplicationRecord
       must_conditions << {
         multi_match: {
           query: query,
-          fields: %w[title authors categories],
+          fields: %w[title],
           type: 'phrase_prefix',
         },
       }
@@ -98,6 +100,8 @@ class Book < ApplicationRecord
     if in_stock.present?
       filter_conditions << { range: { stock_quantity: { gt: 0 } } }
     end
+
+    filter_conditions << { term: { featured: true } } if featured.to_s == 'true'
 
     # Sorting
     sort =

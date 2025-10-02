@@ -67,7 +67,9 @@ Rails
               to: 'categories#get_nested_category'
 
           # /user/books
+          get '/books', to: 'books#index'
           get '/categories/:id/products', to: 'books#category'
+
           get '/books/search', to: 'books#search'
           get '/books/:id', to: 'books#show'
 

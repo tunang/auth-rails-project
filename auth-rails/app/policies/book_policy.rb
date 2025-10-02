@@ -1,6 +1,7 @@
 class BookPolicy < ApplicationPolicy
   def index?
-    user.role == 'admin'
+    # user.role == 'admin'
+    true
   end
 
   def show?
