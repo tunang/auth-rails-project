@@ -23,7 +23,7 @@ class Api::V1::BooksController < ApplicationController
           )
           .page(page)
           .per(per_page)
-
+      binding.pry
       books = search_results.records.includes(:authors, :categories)
     else
       # 📚 Fall back to DB if no filters/search applied
