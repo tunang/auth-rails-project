@@ -37,15 +37,12 @@ class ApplicationController < ActionController::API
 
   def record_not_found(exception)
     render json: {
-             status: 'error',
+             status: {
+               code: 403,
+               message: 'record_not_found',
+             },
              data: nil,
-             errors: [
-               {
-                 code: 'RECORD_NOT_FOUND',
-                 title: 'Not Found',
-                 detail: exception.message,
-               },
-             ],
+             errors: [exception.message],
            },
            status: :not_found
   end
