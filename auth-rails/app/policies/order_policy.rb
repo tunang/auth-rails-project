@@ -1,6 +1,6 @@
 class OrderPolicy < ApplicationPolicy
   def index?
-    user.present?
+    user_is_owner?
   end
 
   def get_all?

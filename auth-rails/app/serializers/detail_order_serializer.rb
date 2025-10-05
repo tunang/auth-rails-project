@@ -17,6 +17,8 @@ class DetailOrderSerializer
       user: user_data,
       order_items: order_items,
       shipping_address: shipping_address_data,
+      stripe_session_id: order.stripe_session_id
+
     }
   end
 

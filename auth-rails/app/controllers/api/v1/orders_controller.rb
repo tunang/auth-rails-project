@@ -7,14 +7,14 @@ class Api::V1::OrdersController < ApplicationController
   include CartItemRemoval
 
   def index
+    # authorize @orders
+
     @orders =
       current_user
         .orders
         .includes(:books, :user, :shipping_address)
         .page(params[:page] || 1)
         .per(params[:per_page] || 10)
-
-    authorize @orders
 
     render json: {
              status: {
