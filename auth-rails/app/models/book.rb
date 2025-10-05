@@ -26,6 +26,9 @@ class Book < ApplicationRecord
   has_many :order_items, dependent: :destroy
   has_many :cart_items, dependent: :destroy
 
+  before_destroy :soft_delete_attachments, prepend: true
+  before_restore :restore_attachments, prepend: true
+
   index_name "books_#{Rails.env}"
 
   settings index: {

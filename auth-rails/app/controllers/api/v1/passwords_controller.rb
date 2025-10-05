@@ -1,4 +1,5 @@
 class Api::V1::PasswordsController < ApplicationController
+  before_action :doorkeeper_authorize!, except: %i[forgot reset]
   respond_to :json
 
   def forgot
@@ -47,6 +48,28 @@ class Api::V1::PasswordsController < ApplicationController
                  message: 'password_reset_failed',
                },
                errors: user.errors.full_messages,
+             },
+             status: :unprocessable_entity
+    end
+  end
+
+  def change_password
+    # Ensure current password is correct
+    unless current_user.valid_password?(params[:current_password])
+      return(
+        render json: {
+                 error: 'Current password is incorrect',
+               },
+               status: :unauthorized
+      )
+    end
+
+    # Update password if confirmation matches
+    if current_user.update(password_params)
+      render json: { message: 'Password changed successfully' }, status: :ok
+    else
+      render json: {
+               errors: current_user.errors.full_messages,
              },
              status: :unprocessable_entity
     end

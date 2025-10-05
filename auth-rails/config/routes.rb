@@ -58,7 +58,7 @@ Rails
           patch 'orders/:id', to: 'orders#update'
           get 'orders/:id', to: 'orders#show'
 
-          get 'static', to: 'stats#statics'
+          get 'stat', to: 'stats#statics'
         end
 
         scope :user do
@@ -91,6 +91,8 @@ Rails
 
           # user/me
           get '/me', to: 'users#me'
+
+          put '/users/change_password', to: 'passwords#change_password'
 
 
 
