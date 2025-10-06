@@ -4,8 +4,8 @@ class HardDeleteCronJob
   sidekiq_options queue: :default
 
   def perform
-    hard_delete_books
-    hard_delete_authors
+    # hard_delete_books
+    # hard_delete_authors
     hard_delete_categories
   end
 

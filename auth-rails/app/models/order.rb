@@ -29,6 +29,9 @@ class Order < ApplicationRecord
     mappings dynamic: false do
       indexes :order_number, type: :text, analyzer: 'standard'
       indexes :status, type: :keyword
+      indexes :created_at,
+              type: :date,
+              format: 'strict_date_optional_time||epoch_millis'
       indexes :user, type: :object do
         indexes :id, type: :integer
         indexes :name, type: :text, analyzer: 'standard'
@@ -42,6 +45,7 @@ class Order < ApplicationRecord
       id: id,
       order_number: order_number,
       status: status,
+      created_at: created_at, # must be here
       user: {
         id: user.id,
         name: user.name,
@@ -63,6 +67,45 @@ class Order < ApplicationRecord
         },
       },
     ).records
+  end
+
+  def self.search_orders(query: nil, sort_by: nil, status: nil)
+    must_conditions = []
+    filter_conditions = []
+
+    # Full-text search across multiple fields
+    if query.present?
+      must_conditions << {
+        multi_match: {
+          query: query,
+          fields: %w[order_number user.name user.email],
+          type: 'phrase_prefix',
+        },
+      }
+    end
+
+    filter_conditions << { term: { status: status } } if status.present?
+
+    # Sorting
+    sort =
+      case sort_by
+      when 'newest'
+        [{ created_at: { order: 'desc' } }]
+      else
+        [{ _score: { order: 'desc' } }] # default: relevance
+      end
+
+    __elasticsearch__.search(
+      {
+        query: {
+          bool: {
+            must: must_conditions,
+            filter: filter_conditions,
+          },
+        },
+        sort: sort,
+      },
+    )
   end
 
   private

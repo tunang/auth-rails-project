@@ -92,7 +92,7 @@ Rails
           # user/me
           get '/me', to: 'users#me'
 
-          put '/users/change_password', to: 'passwords#change_password'
+          put '/change_password', to: 'passwords#change_password'
 
 
 

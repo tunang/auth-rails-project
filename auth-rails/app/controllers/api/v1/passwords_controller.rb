@@ -54,21 +54,38 @@ class Api::V1::PasswordsController < ApplicationController
   end
 
   def change_password
-    # Ensure current password is correct
+    # Verify current password
     unless current_user.valid_password?(params[:current_password])
       return(
         render json: {
-                 error: 'Current password is incorrect',
+                 status: {
+                   code: 401,
+                   message: 'current_password_incorrect',
+                 },
+                 data: nil,
+                 errors: ['Current password is incorrect'],
                },
                status: :unauthorized
       )
     end
 
-    # Update password if confirmation matches
+    # Attempt password update
     if current_user.update(password_params)
-      render json: { message: 'Password changed successfully' }, status: :ok
+      render json: {
+               status: {
+                 code: 200,
+                 message: 'password_changed_successfully',
+               },
+               data: nil,
+             },
+             status: :ok
     else
       render json: {
+               status: {
+                 code: 422,
+                 message: 'password_change_failed',
+               },
+               data: nil,
                errors: current_user.errors.full_messages,
              },
              status: :unprocessable_entity
@@ -79,5 +96,10 @@ class Api::V1::PasswordsController < ApplicationController
 
   def reset_password_params
     params.permit(:reset_password_token, :password, :password_confirmation)
+  end
+
+  def password_params
+    # Only allow new password and confirmation — NOT current_password
+    params.permit(:password, :password_confirmation)
   end
 end

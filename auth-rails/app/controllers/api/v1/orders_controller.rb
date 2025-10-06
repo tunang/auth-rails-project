@@ -36,16 +36,38 @@ class Api::V1::OrdersController < ApplicationController
   def get_all
     authorize Order, :get_all?
 
-    if params[:search].present?
-      # Use elasticsearch
-      orders =
+    # if params[:search].present?
+    #   # Use elasticsearch
+    #   orders =
+    #     Order
+    #       .search_by_name(params[:search])
+    #       .page(params[:page] || 1)
+    #       .per(params[:per_page] || 10)
+    # else
+    #   # Use normal AR
+    #   orders = Order.page(params[:page] || 1).per(params[:per_page] || 10)
+    # end
+
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 5).to_i
+
+    if filter_params.except(:page, :per_page).present?
+      search_results =
         Order
-          .search_by_name(params[:search])
-          .page(params[:page] || 1)
-          .per(params[:per_page] || 10)
+          .search_orders(
+            query: params[:query] || params[:search],
+            sort_by: params[:sort_by],
+            status: params[:status],
+          )
+          .page(page)
+          .per(per_page)
+
+      orders = search_results.records
     else
-      # Use normal AR
-      orders = Order.page(params[:page] || 1).per(params[:per_page] || 10)
+      # 📚 Fall back to DB if no filters/search applied
+      search_results = Order.page(page).per(per_page)
+
+      orders = search_results
     end
 
     render json: {
@@ -166,7 +188,6 @@ class Api::V1::OrdersController < ApplicationController
       #     payload: OrderSerializer.new(order).as_json,
       #   },
       # )
-
       # All admin
       ActionCable.server.broadcast(
         'admin_orders',
@@ -329,5 +350,10 @@ class Api::V1::OrdersController < ApplicationController
       :status,
       order_items: %i[quantity book_id],
     )
+  end
+
+  # ✅ Strong params for search/filter/sort
+  def filter_params
+    params.permit(:query, :search, :sort_by, :status, :page, :per_page)
   end
 end
