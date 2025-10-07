@@ -7,6 +7,11 @@ class OrderPolicy < ApplicationPolicy
     user.role == "admin"
   end
 
+
+  def get_orders_of_user?
+    user.role == "admin"
+  end
+
   def show?
     user_is_owner? || user.role == "admin"
   end

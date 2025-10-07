@@ -55,6 +55,7 @@ Rails
           post 'books/:id/restore', to: 'books#restore'
 
           get 'orders/get_all', to: 'orders#get_all'
+          get 'orders/get_orders_of_user/:id', to: 'orders#get_orders_of_user'
           patch 'orders/:id', to: 'orders#update'
           get 'orders/:id', to: 'orders#show'
 

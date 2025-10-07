@@ -77,11 +77,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_06_070445) do
   end
 
   create_table "book_authors", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "author_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "book_id"
-    t.integer "author_id"
     t.datetime "deleted_at"
+    t.index ["author_id"], name: "index_book_authors_on_author_id"
+    t.index ["book_id", "author_id"], name: "index_book_authors_on_book_id_and_author_id", unique: true
+    t.index ["book_id"], name: "index_book_authors_on_book_id"
     t.index ["deleted_at"], name: "index_book_authors_on_deleted_at"
   end
 
@@ -254,6 +257,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_06_070445) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "addresses", "users"
+  add_foreign_key "book_authors", "authors"
+  add_foreign_key "book_authors", "books"
   add_foreign_key "book_categories", "books"
   add_foreign_key "book_categories", "categories"
   add_foreign_key "cart_items", "books"

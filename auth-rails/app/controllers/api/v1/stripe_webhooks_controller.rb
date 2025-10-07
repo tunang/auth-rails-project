@@ -22,8 +22,7 @@ class Api::V1::StripeWebhooksController < ApplicationController
     case event.type
     when 'checkout.session.completed'
       handle_checkout_completed(event.data.object)
-    # when 'payment_intent.succeeded'
-    #   handle_payment_succeeded(event.data.object)
+   
     else
       Rails.logger.info "Unhandled event type: #{event.type}"
     end
@@ -38,7 +37,7 @@ class Api::V1::StripeWebhooksController < ApplicationController
     return unless order
 
     order.update!(status: 1)
-    ActionCable.server.broadcast("admin_orders", { type: "ORDER_UPDATED", payload: OrderSerializer.new(order).as_json })
+    ActionCable.server.broadcast("admin_orders", { type: "ORDER_PROCESSING", payload: OrderSerializer.new(order).as_json })
 
   end
 

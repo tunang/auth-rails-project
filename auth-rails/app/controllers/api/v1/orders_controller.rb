@@ -36,18 +36,6 @@ class Api::V1::OrdersController < ApplicationController
   def get_all
     authorize Order, :get_all?
 
-    # if params[:search].present?
-    #   # Use elasticsearch
-    #   orders =
-    #     Order
-    #       .search_by_name(params[:search])
-    #       .page(params[:page] || 1)
-    #       .per(params[:per_page] || 10)
-    # else
-    #   # Use normal AR
-    #   orders = Order.page(params[:page] || 1).per(params[:per_page] || 10)
-    # end
-
     page = (params[:page] || 1).to_i
     per_page = (params[:per_page] || 5).to_i
 
@@ -86,6 +74,39 @@ class Api::V1::OrdersController < ApplicationController
            },
            status: :ok
   end
+
+  def get_orders_of_user
+  authorize Order, :get_orders_of_user?
+
+  user = User.find(params[:id])
+
+  page = (params[:page] || 1).to_i
+  per_page = (params[:per_page] || 10).to_i
+
+  orders = user
+              .orders
+              .includes(:books, :shipping_address)
+              .order(created_at: :desc)
+              .page(page)
+              .per(per_page)
+
+  render json: {
+           status: {
+             code: 200,
+             message: "Fetched orders for user ##{user.id} successfully",
+           },
+           data: orders.map { |order| OrderSerializer.new(order).as_json },
+           pagination: {
+             current_page: orders.current_page,
+             next_page: orders.next_page,
+             prev_page: orders.prev_page,
+             total_pages: orders.total_pages,
+             total_count: orders.total_count,
+           },
+         },
+         status: :ok
+end
+
 
   def show
     authorize @order
@@ -191,7 +212,7 @@ class Api::V1::OrdersController < ApplicationController
       # All admin
       ActionCable.server.broadcast(
         'admin_orders',
-        { type: 'ORDER_UPDATED', payload: OrderSerializer.new(order).as_json },
+        { type: 'ORDER_CREATED', payload: OrderSerializer.new(order).as_json },
       )
 
       render json: {

@@ -1,23 +1,24 @@
 class Api::V1::UsersController < ApplicationController
   before_action :doorkeeper_authorize!
 
-    def index
+  def index
     authorize User, :index?
-
-    # if params[:search].present?
-    #   # 🔎 Search với Elasticsearch
-    #    =
-    #     Book
-    #       .search_by_name(params[:search])
-    #       .page(params[:page] || 1)
-    #       .per(params[:per_page] || 5)
-    # else
-    # end
-      # 📚 Lấy từ DB bình thường
-      users =
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 5).to_i
+    if filter_params.except(:page, :per_page).present?
+      search_results =
         User
-          .page(params[:page] || 1)
-          .per(params[:per_page] || 5)
+          .search_users(query: params[:query] || params[:search])
+          .page(page)
+          .per(per_page)
+
+      users = search_results.records
+    else
+      # 📚 Fall back to DB if no filters/search applied
+      search_results = User.page(page).per(per_page)
+
+      users = search_results
+    end
 
     render json: {
              status: {
@@ -36,16 +37,21 @@ class Api::V1::UsersController < ApplicationController
            status: :ok
   end
 
-
   def me
     render json: {
              status: {
                code: 200,
                message: 'Get current user successfully.',
              },
-             data:
-               UserSerializer.new(current_user).as_json,
+             data: UserSerializer.new(current_user).as_json,
            },
            status: :ok
+  end
+
+  private
+
+  # ✅ Strong params for search/filter/sort
+  def filter_params
+    params.permit(:query, :search, :page, :per_page)
   end
 end

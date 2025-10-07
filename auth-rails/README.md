@@ -24,3 +24,6 @@ it will ask you for a new password
 
 stripe login
 stripe listen --forward-to localhost:3001/api/v1/stripe/webhook
+
+
+5. Get exact name table in kibana server GET _cat/indices?v, match it with model
