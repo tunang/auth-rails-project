@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  acts_as_paranoid
+
+
   include Elasticsearch::Model
   include Elasticsearch::Model::Callbacks
 

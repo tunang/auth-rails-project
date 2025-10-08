@@ -40,6 +40,9 @@ Rails
 
         scope :admin do
           resources :users
+          get 'users/deleted/list', to: 'users#deleted'
+          post 'users/:id/restore', to: 'users#restore'
+
           resources :authors
           get 'authors/deleted/list', to: 'authors#deleted'
           post 'authors/:id/restore', to: 'authors#restore'
@@ -50,7 +53,6 @@ Rails
           post 'categories/:id/restore', to: 'categories#restore'
           
           resources :books
-
           get 'books/deleted/list', to: 'books#deleted'
           post 'books/:id/restore', to: 'books#restore'
 
