@@ -1,7 +1,6 @@
 # db/seeds.rb
 require "faker"
 
-
 puts "🌱 Seeding categories..."
 
 main_categories = [
@@ -31,13 +30,13 @@ subcategories = {
 }
 
 main_categories.each do |main|
-  parent = Category.create!(
+  parent = Category.find_or_create_by!(
     name: main,
     description: "All books related to #{main}"
   )
 
   subcategories[main].each do |child|
-    Category.create!(
+    Category.find_or_create_by!(
       name: child,
       description: "#{child} books under #{main}",
       parent: parent
@@ -47,9 +46,10 @@ end
 
 puts "✅ Seeded #{Category.count} categories."
 
+
 puts "🌱 Seeding authors..."
 
-# Một số tác giả thật
+# Some famous real authors
 authors = [
   { name: "J.K. Rowling", nationality: "British", birth_date: Date.new(1965,7,31), biography: "Author of Harry Potter series." },
   { name: "George R.R. Martin", nationality: "American", birth_date: Date.new(1948,9,20), biography: "Author of A Song of Ice and Fire." },
@@ -66,26 +66,89 @@ authors.each do |data|
   end
 end
 
-# 45 tác giả giả → tổng khoảng 50
-45.times do
-  Author.create!(
-    name: Faker::Book.author,
-    nationality: Faker::Nation.nationality,
-    birth_date: Faker::Date.birthday(min_age: 25, max_age: 90),
-    biography: Faker::Lorem.paragraph(sentence_count: 3)
-  )
+# Add random authors up to 1000 total
+existing_authors = Author.count
+if existing_authors < 1000
+  (1000 - existing_authors).times do
+    Author.create!(
+      name: Faker::Book.author,
+      nationality: Faker::Nation.nationality,
+      birth_date: Faker::Date.birthday(min_age: 25, max_age: 90),
+      biography: Faker::Lorem.paragraph(sentence_count: 3)
+    )
+  end
 end
 
-puts "✅ Seeded #{Author.count} authors."
+puts "✅ Seeded #{Author.count} authors total."
+
+
+puts "🌱 Seeding 10,000 books (this may take a few minutes)..."
+
+author_ids = Author.pluck(:id)
+category_ids = Category.pluck(:id)
+
+book_data = []
+now = Time.now
+
+10_000.times do |i|
+  title = "#{Faker::Book.title} #{i}" # ensure uniqueness
+  price = Faker::Commerce.price(range: 5.0..100.0)
+  discount = [0, 5, 10, 15, 20].sample
+  cost_price = (price * rand(0.4..0.8)).round(2)
+
+  book_data << {
+    title: title,
+    description: Faker::Lorem.paragraph(sentence_count: 5),
+    price: price,
+    stock_quantity: rand(10..500),
+    featured: [true, false].sample,
+    sold_count: rand(0..1000),
+    cost_price: cost_price,
+    discount_percentage: discount,
+    created_at: now,
+    updated_at: now
+  }
+end
+
+Book.insert_all!(book_data)
+puts "✅ Inserted 10,000 books."
+
+
+puts "🔗 Linking books with authors and categories..."
+
+book_authors = []
+book_categories = []
+
+Book.find_in_batches(batch_size: 500) do |batch|
+  batch.each do |book|
+    chosen_authors = author_ids.sample(rand(1..3))
+    chosen_categories = category_ids.sample(rand(1..3))
+
+    chosen_authors.each do |aid|
+      book_authors << { book_id: book.id, author_id: aid, created_at: now, updated_at: now }
+    end
+
+    chosen_categories.each do |cid|
+      book_categories << { book_id: book.id, category_id: cid, created_at: now, updated_at: now }
+    end
+  end
+end
+
+BookAuthor.insert_all!(book_authors)
+BookCategory.insert_all!(book_categories)
+
+puts "✅ Linked books with authors & categories."
+
 
 puts "🔄 Rebuilding Elasticsearch indexes..."
 
-# Rebuild index cho Category
 Category.__elasticsearch__.create_index!(force: true)
 Category.import
 
-# Rebuild index cho Author
 Author.__elasticsearch__.create_index!(force: true)
 Author.import
 
-puts "✅ Elasticsearch reindexed for Category & Author."
+Book.__elasticsearch__.create_index!(force: true)
+Book.import
+
+puts "🎉 Done seeding 1,000 authors and 10,000 books with categories and Elasticsearch!"

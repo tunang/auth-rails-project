@@ -7,7 +7,7 @@ class Api::V1::StatsController < ApplicationController
     total_out_of_stock_books = Book.where(stock_quantity: 0).count
     total_users = User.count
     pending_orders = Order.where(status: 'pending').count
-    processing_orders = Order.where(status: 'processing').count
+    confirmed_orders = Order.where(status: 'confirmed').count
     delivered_orders = Order.where(status: 'delivered').count
 
     render json: {
@@ -21,7 +21,7 @@ class Api::V1::StatsController < ApplicationController
                total_out_of_stock_books: total_out_of_stock_books,
                total_users: total_users,
                pending_orders: pending_orders,
-               processing_orders: processing_orders,
+               confirmed_orders: confirmed_orders,
                delivered_orders: delivered_orders,
              },
            },

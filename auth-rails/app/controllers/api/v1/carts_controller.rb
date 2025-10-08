@@ -20,28 +20,46 @@ class Api::V1::CartsController < ApplicationController
            status: :ok
   end
 
-  def add_item
-    authorize :cart, :add_item?
-    book = Book.find(params[:book_id])
-    item = current_user.cart_items.find_or_initialize_by(book:)
-    item.quantity += params[:quantity].to_i
+def add_item
+  authorize :cart, :add_item?
 
-    if item.save
-      render json: {
-               status: {
-                 code: 200,
-                 message: 'item_added',
-               },
-               data: {
-                 quantity: item.quantity,
-                 book: BookSerializer.new(item.book).as_json,
-               },
-             },
-             status: :ok
-    else
-      render_validation_errors(item)
-    end
+  book = Book.find(params[:book_id])
+  quantity_to_add = params[:quantity].to_i
+
+  item = current_user.cart_items.find_or_initialize_by(book:)
+  new_quantity = item.quantity.to_i + quantity_to_add
+
+  # Check if enough stock is available
+  if new_quantity > book.stock_quantity
+    return render json: {
+      status: {
+        code: 422,
+        message: "not_enough_stock",
+      },
+      data: {
+        available_quantity: book.stock_quantity,
+      },
+    }, status: :unprocessable_entity
   end
+
+  item.quantity = new_quantity
+
+  if item.save
+    render json: {
+      status: {
+        code: 200,
+        message: "item_added",
+      },
+      data: {
+        quantity: item.quantity,
+        book: BookSerializer.new(item.book).as_json,
+      },
+    }, status: :ok
+  else
+    render_validation_errors(item)
+  end
+end
+
 
   def update_item
     authorize :cart, :update_item?

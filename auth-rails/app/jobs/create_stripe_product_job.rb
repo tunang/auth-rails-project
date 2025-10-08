@@ -8,11 +8,18 @@ class CreateStripeProductJob < ApplicationJob
     book = Book.find_by_id book_id
     return if book.synced?
 
-    stripe_data = StripeService.create_product_with_price(book)
+    upload_stripe_book = book.dup
+    upload_stripe_book.price = book.price
+
+    if book.discount_percentage > 0
+      upload_stripe_book.price -= book.price * (book.discount_percentage / 100)
+    end
+
+    stripe_data = StripeService.create_product_with_price(upload_stripe_book)
     book.update!(
       stripe_product_id: stripe_data[:product].id,
       stripe_price_id: stripe_data[:price].id,
-      sync_status: :synced
+      sync_status: :synced,
     )
   rescue StripeService::StripeError => e
     book.update!(sync_status: :failed)

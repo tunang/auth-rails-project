@@ -37,6 +37,10 @@ class Api::V1::UsersController < ApplicationController
            status: :ok
   end
 
+  def update
+
+  end
+
   def me
     render json: {
              status: {

@@ -8,7 +8,7 @@ class User < ApplicationRecord
   has_many :orders, dependent: :destroy
   has_many :order_books, through: :orders, source: :book
 
-  enum :role, { user: 'user', admin: 'admin' }
+  enum :role, { user: 'user', staff: 'staff', admin: 'admin' }
 
   # Mặc định mỗi user là 'user' nếu không khai báo
   after_initialize { self.role ||= 'user' }

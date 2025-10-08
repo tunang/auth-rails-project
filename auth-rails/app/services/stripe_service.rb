@@ -16,8 +16,16 @@ class StripeService
     new.update_product(book)
   end
 
+  def self.update_price(temp_book, original_book = nil)
+    new.update_price(temp_book, original_book)
+  end
+
   def self.create_product_with_price(book)
     new.create_product_with_price(book)
+  end
+
+  def self.update_product_with_price(temp_book, original_book = nil)
+    new.update_product_with_price(temp_book, original_book)
   end
 
   # -------- Instance methods --------
@@ -49,6 +57,42 @@ class StripeService
     { product: stripe_product, price: stripe_price }
   end
 
+    def update_product_with_price(temp_book, original_book = nil)
+    return unless temp_book.stripe_product_id.present? && temp_book.stripe_price_id.present?
+
+    # 1️⃣ Update product name & description on Stripe
+    stripe_product = Stripe::Product.update(
+      temp_book.stripe_product_id,
+      product_params(temp_book)
+    )
+
+    # 2️⃣ Create a new price (Stripe doesn’t allow price updates directly)
+    new_price = Stripe::Price.create(
+      product: temp_book.stripe_product_id,
+      unit_amount: (temp_book.price * 100).to_i, # cents
+      currency: 'usd'
+    )
+
+    # 3️⃣ Deactivate old price
+    Stripe::Price.update(temp_book.stripe_price_id, { active: false })
+
+    # 4️⃣ Update local DB record (only if original_book provided)
+    if original_book.present?
+      original_book.update!(
+        stripe_price_id: new_price.id,
+        sync_status: :synced
+      )
+    end
+
+    Rails.logger.info "✅ Updated Stripe product & price for book #{original_book&.id || temp_book.id}"
+
+    { product: stripe_product, price: new_price }
+
+  rescue Stripe::StripeError => e
+    Rails.logger.error "❌ Failed to update product & price for book #{temp_book.id}: #{e.message}"
+    raise StripeError, "Failed to update product & price on Stripe: #{e.message}"
+  end
+
   def update_product(book)
     return unless book.stripe_product_id.present?
     stripe_product =
@@ -62,11 +106,40 @@ class StripeService
     raise StripeError, "Failed to update product on Stripe: #{e.message}"
   end
 
+  def update_price(temp_book, original_book = nil)
+    return unless temp_book.stripe_price_id.present?
+
+    # 1️⃣ Create a new price on Stripe
+    new_price =
+      Stripe::Price.create(
+        product: temp_book.stripe_product_id,
+        unit_amount: (temp_book.price * 100).to_i, # cents
+        currency: 'usd',
+      )
+
+    # 2️⃣ Deactivate the old price
+    Stripe::Price.update(temp_book.stripe_price_id, { active: false })
+
+    # 3️⃣ Update only the original book in DB
+    if original_book.present?
+      original_book.update!(stripe_price_id: new_price.id)
+    else
+      Rails.logger.warn '⚠️ No original book provided — skipping DB update'
+    end
+
+    Rails
+      .logger.info "✅ Updated Stripe price: #{new_price.id} for book #{original_book&.id || temp_book.id}"
+
+    new_price
+  rescue Stripe::StripeError => e
+    Rails
+      .logger.error "❌ Failed to update Stripe price for book #{temp_book.id}: #{e.message}"
+    raise StripeError, "Failed to update price on Stripe: #{e.message}"
+  end
 
   def delete_product(book)
     return unless book.stripe_product_id.present?
-    stripe_product =
-      Stripe::Product.delete(book.stripe_product_id)
+    stripe_product = Stripe::Product.delete(book.stripe_product_id)
     Rails
       .logger.info "Delete Stripe product: #{stripe_product.id} for book: #{book.id}"
     stripe_product
@@ -75,7 +148,6 @@ class StripeService
       .logger.error "Failed to delete Stripe product for book #{book.id}: #{e.message}"
     raise StripeError, "Failed to delete product on Stripe: #{e.message}"
   end
-
 
   def build_line_items_from_order(order)
     order.order_items.map do |item|
@@ -107,10 +179,7 @@ class StripeService
   private
 
   def product_params(book)
-    {
-      name: book.title,
-      description: "#{book.title} title",
-    }
+    { name: book.title, description: "#{book.title} title" }
   end
 
   def price_params(book, stripe_product_id)
