@@ -21,8 +21,6 @@ class UserPolicy < ApplicationPolicy
   def restore?
     user.role == 'admin'
   end
-
-
   def deleted?
     user.role == 'admin' 
   end

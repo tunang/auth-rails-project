@@ -100,8 +100,12 @@ class Book < ApplicationRecord
     if max_price.present?
       filter_conditions << { range: { price: { lte: max_price.to_f } } }
     end
-    if in_stock.present?
+      if in_stock.to_s == 'true'
+      # Find books with quantity greater than 0
       filter_conditions << { range: { stock_quantity: { gt: 0 } } }
+    elsif in_stock.to_s == 'false'
+      # Find books with quantity of exactly 0
+      filter_conditions << { term: { stock_quantity: 0 } }
     end
 
     filter_conditions << { term: { featured: true } } if featured.to_s == 'true'

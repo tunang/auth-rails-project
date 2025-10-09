@@ -21,6 +21,8 @@ gem "elasticsearch-model", "~> 8.0"
 gem "elasticsearch-rails", "~> 8.0"
 gem "faker"
 gem "friendly_id"
+gem 'google-id-token'
+
 
 
 

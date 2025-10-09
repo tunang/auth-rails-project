@@ -25,6 +25,7 @@ Rails
     namespace :api do
       namespace :v1 do
         post 'login', to: 'sessions#create'
+        post 'auth/google', to: 'sessions#google'
         post 'refresh', to: 'sessions#refresh'
         post 'register', to: 'registrations#create'
         delete 'logout', to: 'sessions#destroy'

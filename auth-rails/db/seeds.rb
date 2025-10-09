@@ -68,8 +68,8 @@ end
 
 # Add random authors up to 1000 total
 existing_authors = Author.count
-if existing_authors < 1000
-  (1000 - existing_authors).times do
+if existing_authors < 100
+  (100 - existing_authors).times do
     Author.create!(
       name: Faker::Book.author,
       nationality: Faker::Nation.nationality,
@@ -82,7 +82,7 @@ end
 puts "✅ Seeded #{Author.count} authors total."
 
 
-puts "🌱 Seeding 10,000 books (this may take a few minutes)..."
+puts "🌱 Seeding 100 books (this may take a few minutes)..."
 
 author_ids = Author.pluck(:id)
 category_ids = Category.pluck(:id)
@@ -90,7 +90,7 @@ category_ids = Category.pluck(:id)
 book_data = []
 now = Time.now
 
-10_000.times do |i|
+100.times do |i|
   title = "#{Faker::Book.title} #{i}" # ensure uniqueness
   price = Faker::Commerce.price(range: 5.0..100.0)
   discount = [0, 5, 10, 15, 20].sample

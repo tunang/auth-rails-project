@@ -16,7 +16,7 @@ class Api::V1::UsersController < ApplicationController
           .per(per_page)
       users = search_results.records
     else
-      users = User.active.page(page).per(per_page)
+      users = User.page(page).per(per_page)
     end
 
     render json: {

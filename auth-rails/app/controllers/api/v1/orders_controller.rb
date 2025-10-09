@@ -128,7 +128,7 @@ end
       subtotal =
         cart_items.sum do |item|
           book = Book.find(item[:book_id])
-          book.price * item[:quantity].to_i
+          ((book.price - book.price * (book.discount_percentage / 100)) * item[:quantity].to_i)
         end
 
       tax_amount = subtotal * AppConstants::Order::TAX_RATE
