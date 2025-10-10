@@ -2,7 +2,7 @@ require "sidekiq"
 require "sidekiq-cron"
 
 Sidekiq.configure_server do |config|
-  config.redis = { url: ENV.fetch("REDIS_URL", "redis://localhost:56379/0") }
+  config.redis = { url: ENV.fetch("REDIS_URL") }
 
   # Load cron jobs từ file riêng schedule.yml
   schedule_file = Rails.root.join("config/schedule.yml")
@@ -15,5 +15,5 @@ Sidekiq.configure_server do |config|
 end
 
 Sidekiq.configure_client do |config|
-  config.redis = { url: ENV.fetch("REDIS_URL", "redis://localhost:56379/0") }
+  config.redis = { url: ENV.fetch("REDIS_URL") }
 end

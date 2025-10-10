@@ -13,6 +13,8 @@ class BookSerializer
       price: book.price,
       discount_percentage: book.discount_percentage,
       stock_quantity: book.stock_quantity,
+      sold_count: book.sold_count,
+      cost_price:book.cost_price,
       featured: book.featured,
       cover_image_url: cover_image_url,
       sample_page_urls: sample_page_urls,

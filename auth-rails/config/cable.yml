@@ -1,6 +1,6 @@
 development:
   adapter: redis
-  url: redis://localhost:56379/1
+  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:56379/1" } %>
   
 
 test:
