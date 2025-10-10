@@ -1,0 +1,30 @@
+# Dockerfile.dev - Dành cho môi trường Development
+
+# Sử dụng một image Ruby chính thức làm base image
+# Thay 3.2.2 bằng phiên bản Ruby của bạn (nếu project của bạn dùng 3.3.0 thì đổi thành 3.3.0)
+FROM ruby:3.3.9
+
+# Cài đặt các dependencies cần thiết
+# - build-essential: Cần cho việc build native extensions của một số gem
+# - libpq-dev: Cần cho gem 'pg' (PostgreSQL)
+# - nodejs, yarn: Cần cho Rails asset pipeline/jsbundling-rails
+RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs yarn
+
+# Thiết lập thư mục làm việc bên trong container
+WORKDIR /rails
+
+# Copy Gemfile và Gemfile.lock vào trước để tận dụng Docker layer caching
+COPY Gemfile Gemfile.lock ./
+# Cài đặt toàn bộ gems (bao gồm cả development gems)
+RUN bundle install
+
+# Copy toàn bộ code của ứng dụng vào thư mục làm việc
+# Bước này thực ra chỉ để image có sẵn code, khi chạy với docker-compose
+# volume mount sẽ ghi đè lên thư mục này.
+COPY . .
+
+# Expose port 3000
+EXPOSE 3000
+
+# Lệnh mặc định để khởi chạy Rails server
+CMD ["rails", "server", "-b", "0.0.0.0"]

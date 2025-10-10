@@ -67,6 +67,18 @@ class Api::V1::SessionsController < ApplicationController
     email = payload['email']
 
     user = User.find_or_initialize_by(email:)
+
+    if user.new_record?
+      # If user is new, set a random password to satisfy Devise validations
+      random_password = Devise.friendly_token
+      user.password = random_password
+      user.password_confirmation = random_password # If your model requires confirmation
+
+      # Pro-Tip: If you use Devise's :confirmable module, you should
+      # skip the confirmation email since Google has already verified the email.
+      user.skip_confirmation!
+    end
+    
     user.update!(
       name: payload['name'],
       provider: 'google',
