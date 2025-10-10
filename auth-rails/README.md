@@ -3,8 +3,6 @@
 
 1. rails db:migrate
 
-
-
 2. Set default WebApp for login
 Rails c 
 
