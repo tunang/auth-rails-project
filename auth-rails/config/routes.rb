@@ -63,6 +63,8 @@ Rails
           get 'orders/:id', to: 'orders#show'
 
           get 'stat', to: 'stats#statics'
+
+          resource :settings, only: %i[show update]
         end
 
         scope :user do
@@ -98,6 +100,7 @@ Rails
 
           put '/change_password', to: 'passwords#change_password'
 
+          resource :settings, only: %i[show]
 
 
           

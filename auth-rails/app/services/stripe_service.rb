@@ -160,13 +160,13 @@ class StripeService
             currency: 'usd',
             product_data: {
               name: book.title,
-              description: "#{book.title} by #{book.author}",
-              images:
-                if extract_cover_image_url(book)
-                  [extract_cover_image_url(book)]
-                else
-                  []
-                end,
+              description: "#{book.title} by #{book.authors[0].name}",
+              # images:
+                # if extract_cover_image_url(book)
+                #   [extract_cover_image_url(book)]
+                # else
+                #   []
+                # end,
             },
             unit_amount: calculate_price_in_cents(book),
           },
@@ -191,8 +191,13 @@ class StripeService
   end
 
   def calculate_price_in_cents(book)
-    (book.price * 100).to_i
-  end
+  # Bước 1: Tính giá cuối cùng sau khi đã áp dụng giảm giá
+  # Chú ý: dùng 100.0 để đảm bảo phép chia là số thực, tránh lỗi chia số nguyên
+  final_price = book.price * (1 - book.discount_percentage / 100.0)
+
+  # Bước 2: Chuyển giá cuối cùng sang đơn vị cent và làm tròn thành số nguyên
+  (final_price * 100).to_i
+end
 
   def extract_cover_image_url(book)
     # Ví dụ: book.cover_image.attached? ? url_for(book.cover_image) : nil

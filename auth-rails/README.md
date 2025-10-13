@@ -25,3 +25,5 @@ stripe listen --forward-to localhost:3001/api/v1/stripe/webhook
 
 
 5. Get exact name table in kibana server GET _cat/indices?v, match it with model
+
+6. console log for debug docker-compose run --service-ports web

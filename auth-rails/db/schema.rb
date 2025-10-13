@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_10_090422) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_13_020137) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -233,6 +233,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_10_090422) do
     t.index ["stripe_session_id"], name: "index_orders_on_stripe_session_id", unique: true
     t.index ["user_id", "status"], name: "index_orders_on_user_id_and_status"
     t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.decimal "tax_rate"
+    t.decimal "shipping_cost"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|

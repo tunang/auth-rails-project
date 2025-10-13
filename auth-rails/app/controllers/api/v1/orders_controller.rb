@@ -76,37 +76,37 @@ class Api::V1::OrdersController < ApplicationController
   end
 
   def get_orders_of_user
-  authorize Order, :get_orders_of_user?
+    authorize Order, :get_orders_of_user?
 
-  user = User.find(params[:id])
+    user = User.find(params[:id])
 
-  page = (params[:page] || 1).to_i
-  per_page = (params[:per_page] || 10).to_i
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 10).to_i
 
-  orders = user
-              .orders
-              .includes(:books, :shipping_address)
-              .order(created_at: :desc)
-              .page(page)
-              .per(per_page)
+    orders =
+      user
+        .orders
+        .includes(:books, :shipping_address)
+        .order(created_at: :desc)
+        .page(page)
+        .per(per_page)
 
-  render json: {
-           status: {
-             code: 200,
-             message: "Fetched orders for user ##{user.id} successfully",
+    render json: {
+             status: {
+               code: 200,
+               message: "Fetched orders for user ##{user.id} successfully",
+             },
+             data: orders.map { |order| OrderSerializer.new(order).as_json },
+             pagination: {
+               current_page: orders.current_page,
+               next_page: orders.next_page,
+               prev_page: orders.prev_page,
+               total_pages: orders.total_pages,
+               total_count: orders.total_count,
+             },
            },
-           data: orders.map { |order| OrderSerializer.new(order).as_json },
-           pagination: {
-             current_page: orders.current_page,
-             next_page: orders.next_page,
-             prev_page: orders.prev_page,
-             total_pages: orders.total_pages,
-             total_count: orders.total_count,
-           },
-         },
-         status: :ok
-end
-
+           status: :ok
+  end
 
   def show
     authorize @order
@@ -128,13 +128,16 @@ end
       subtotal =
         cart_items.sum do |item|
           book = Book.find(item[:book_id])
-          ((book.price - book.price * (book.discount_percentage / 100)) * item[:quantity].to_i)
+          (
+            (book.price - book.price * (book.discount_percentage / 100)) *
+              item[:quantity].to_i
+          )
         end
 
-      tax_amount = subtotal * AppConstants::Order::TAX_RATE
-      shipping_cost = AppConstants::Order::SHIPPING_COST
+      settings = Setting.current
+      tax_amount = subtotal * settings.tax_rate
+      shipping_cost = settings.shipping_cost
       total_amount = subtotal + tax_amount + shipping_cost
-
       order =
         current_user.orders.create!(
           order_number: SecureRandom.hex(10).upcase,
