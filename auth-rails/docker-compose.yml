@@ -1,30 +1,17 @@
 services:
   web:
-    # Build image từ Dockerfile trong thư mục hiện tại (.)
     build:
       context: .
       dockerfile: Dockerfile.dev
     container_name: web-auth-rails-project
-    # Khởi động lại container nếu nó bị lỗi
     restart: always
-    # Chạy lệnh để khởi động server
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3001 -b '0.0.0.0'"
-    # Ánh xạ thư mục code hiện tại vào trong container
-    # Giúp bạn thay đổi code trên máy local và thấy kết quả ngay lập tức mà không cần build lại image
-
     env_file:
       - .env
     volumes:
       - .:/rails
-    # Ánh xạ port 3001 của container ra port 3000 của máy host
     ports:
       - "3001:3001"
-    # Các biến môi trường cần thiết cho Rails
-    # environment:
-    #   DATABASE_URL: postgresql://tuan2004:tuan2004@postgres:5432/postgres-auth-rails-project
-    #   REDIS_URL: redis://redis:6379/1
-    #   ELASTICSEARCH_URL: http://elastic:tuan2004@elasticsearch:9200
-    #   RAILS_MASTER_KEY: YOUR_RAILS_MASTER_KEY_HERE
     depends_on:
       postgres:
         condition: service_started
@@ -77,9 +64,9 @@ services:
     container_name: es-auth-rails-project
     environment:
       - discovery.type=single-node
-      - ELASTIC_PASSWORD=tuan2004 # mật khẩu user "elastic"
+      - ELASTIC_PASSWORD=tuan2004
       - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=false # tắt SSL cho dễ test
+      - xpack.security.http.ssl.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ulimits:
       memlock:
@@ -114,7 +101,8 @@ services:
     ports:
       - "5601:5601"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy # <--- Đã cập nhật
 
 volumes:
   postgres_data:
