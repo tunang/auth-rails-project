@@ -1,5 +1,4 @@
 services:
-  # === DỊCH VỤ RAILS MỚI CỦA BẠN ===
   web:
     # Build image từ Dockerfile trong thư mục hiện tại (.)
     build:
