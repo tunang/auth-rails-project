@@ -32,3 +32,5 @@ stripe listen --forward-to localhost:3001/api/v1/stripe/webhook
 7.  Order.__elasticsearch__.create_index!(force: true)
 Order.import
 
+8. Change port dockerfile, docker-compose -> 80
+

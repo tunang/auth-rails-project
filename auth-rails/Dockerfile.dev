@@ -34,7 +34,7 @@ RUN bundle install
 COPY . .
 
 # Expose port 80
-EXPOSE 80
+EXPOSE 3001
 
 # Lệnh mặc định để khởi chạy Rails server
-CMD ["rails", "server", "-p", "80", "-b", "0.0.0.0"]
+CMD ["rails", "server", "-p", "3001", "-b", "0.0.0.0"]

@@ -1,6 +1,7 @@
 require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
+  config.hosts << /.*\.trycloudflare\.com/
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Make code changes take effect immediately without server restart.
@@ -89,6 +90,6 @@ Rails.application.configure do
     'http://localhost:3001', # Rails server itself
     'http://localhost:5173', # React/Vite dev server
     'http://10.10.31.231',
-    'https://frontend-ecom-cucu.vercel.app/'
+    'https://frontend-ecom-cucu.vercel.app'
   ]
 end
