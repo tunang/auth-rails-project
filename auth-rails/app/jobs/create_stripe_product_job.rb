@@ -9,11 +9,12 @@ class CreateStripeProductJob < ApplicationJob
     return if book.synced?
 
     upload_stripe_book = book.dup
-    upload_stripe_book.price = book.price
+    ##I dont know, sth stripe need this fkin below to work normally
+    # upload_stripe_book.price = book.price
 
-    if book.discount_percentage > 0
-      upload_stripe_book.price -= book.price * (book.discount_percentage / 100)
-    end
+    # if book.discount_percentage > 0
+    #   upload_stripe_book.price -= book.price * (book.discount_percentage / 100)
+    # end
 
     stripe_data = StripeService.create_product_with_price(upload_stripe_book)
     book.update!(

@@ -41,6 +41,7 @@ class StripeService
   end
 
   def create_price(book, stripe_product_id)
+    binding.pry
     stripe_price = Stripe::Price.create(price_params(book, stripe_product_id))
     Rails
       .logger.info "Created Stripe price: #{stripe_price.id} for book: #{book.id}"
@@ -57,40 +58,44 @@ class StripeService
     { product: stripe_product, price: stripe_price }
   end
 
-    def update_product_with_price(temp_book, original_book = nil)
-    return unless temp_book.stripe_product_id.present? && temp_book.stripe_price_id.present?
+  def update_product_with_price(temp_book, original_book = nil)
+    unless temp_book.stripe_product_id.present? &&
+             temp_book.stripe_price_id.present?
+      return
+    end
 
     # 1️⃣ Update product name & description on Stripe
-    stripe_product = Stripe::Product.update(
-      temp_book.stripe_product_id,
-      product_params(temp_book)
-    )
+    stripe_product =
+      Stripe::Product.update(
+        temp_book.stripe_product_id,
+        product_params(temp_book),
+      )
 
     # 2️⃣ Create a new price (Stripe doesn’t allow price updates directly)
-    new_price = Stripe::Price.create(
-      product: temp_book.stripe_product_id,
-      unit_amount: (temp_book.price * 100).to_i, # cents
-      currency: 'usd'
-    )
+    new_price =
+      Stripe::Price.create(
+        product: temp_book.stripe_product_id,
+        unit_amount: (temp_book.price * 100).to_i, # cents
+        currency: 'usd',
+      )
 
     # 3️⃣ Deactivate old price
     Stripe::Price.update(temp_book.stripe_price_id, { active: false })
 
     # 4️⃣ Update local DB record (only if original_book provided)
     if original_book.present?
-      original_book.update!(
-        stripe_price_id: new_price.id,
-        sync_status: :synced
-      )
+      original_book.update!(stripe_price_id: new_price.id, sync_status: :synced)
     end
 
-    Rails.logger.info "✅ Updated Stripe product & price for book #{original_book&.id || temp_book.id}"
+    Rails
+      .logger.info "✅ Updated Stripe product & price for book #{original_book&.id || temp_book.id}"
 
     { product: stripe_product, price: new_price }
-
   rescue Stripe::StripeError => e
-    Rails.logger.error "❌ Failed to update product & price for book #{temp_book.id}: #{e.message}"
-    raise StripeError, "Failed to update product & price on Stripe: #{e.message}"
+    Rails
+      .logger.error "❌ Failed to update product & price for book #{temp_book.id}: #{e.message}"
+    raise StripeError,
+          "Failed to update product & price on Stripe: #{e.message}"
   end
 
   def update_product(book)
@@ -162,11 +167,11 @@ class StripeService
               name: book.title,
               description: "#{book.title} by #{book.authors[0].name}",
               # images:
-                # if extract_cover_image_url(book)
-                #   [extract_cover_image_url(book)]
-                # else
-                #   []
-                # end,
+              # if extract_cover_image_url(book)
+              #   [extract_cover_image_url(book)]
+              # else
+              #   []
+              # end,
             },
             unit_amount: calculate_price_in_cents(book),
           },
@@ -191,13 +196,13 @@ class StripeService
   end
 
   def calculate_price_in_cents(book)
-  # Bước 1: Tính giá cuối cùng sau khi đã áp dụng giảm giá
-  # Chú ý: dùng 100.0 để đảm bảo phép chia là số thực, tránh lỗi chia số nguyên
-  final_price = book.price * (1 - book.discount_percentage / 100.0)
+    # Bước 1: Tính giá cuối cùng sau khi đã áp dụng giảm giá
+    # Chú ý: dùng 100.0 để đảm bảo phép chia là số thực, tránh lỗi chia số nguyên
+    final_price = book.price * (1 - book.discount_percentage / 100.0)
 
-  # Bước 2: Chuyển giá cuối cùng sang đơn vị cent và làm tròn thành số nguyên
-  (final_price * 100).to_i
-end
+    # Bước 2: Chuyển giá cuối cùng sang đơn vị cent và làm tròn thành số nguyên
+    (final_price * 100).to_i
+  end
 
   def extract_cover_image_url(book)
     # Ví dụ: book.cover_image.attached? ? url_for(book.cover_image) : nil

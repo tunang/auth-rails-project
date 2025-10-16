@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_13_020137) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_16_031136) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -140,6 +140,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_13_020137) do
     t.index ["deleted_at"], name: "index_categories_on_deleted_at"
     t.index ["parent_id", "name"], name: "index_categories_on_parent_id_and_name", unique: true
     t.index ["parent_id"], name: "index_categories_on_parent_id"
+  end
+
+  create_table "coupons", force: :cascade do |t|
+    t.string "stripe_coupon_id"
+    t.string "code", null: false
+    t.float "percent_off"
+    t.integer "amount_off"
+    t.string "duration", null: false
+    t.boolean "active", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_coupons_on_code", unique: true
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|

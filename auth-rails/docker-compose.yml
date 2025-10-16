@@ -11,7 +11,7 @@ services:
     volumes:
       - .:/rails
     ports:
-      - "3001:3001"
+      - "80:80"
     depends_on:
       postgres:
         condition: service_started
