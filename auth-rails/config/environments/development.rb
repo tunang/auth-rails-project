@@ -88,5 +88,7 @@ Rails.application.configure do
   config.action_cable.allowed_request_origins = [
     'http://localhost:3001', # Rails server itself
     'http://localhost:5173', # React/Vite dev server
+    'http://10.10.31.231',
+    'https://frontend-ecom-cucu.vercel.app/'
   ]
 end
