@@ -41,6 +41,8 @@ Rails
 
         scope :admin do
           resources :users
+          resources :coupons
+
           get 'users/deleted/list', to: 'users#deleted'
           post 'users/:id/restore', to: 'users#restore'
 
