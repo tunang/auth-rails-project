@@ -37,6 +37,8 @@ class DetailOrderSerializer
         quantity: order_item.quantity,
         unit_price: order_item.unit_price,
         total_price: order_item.total_price,
+      discount_amount: order.discount_amount,
+
         book: {
           id: order_item.book.id,
           title: order_item.book.title,

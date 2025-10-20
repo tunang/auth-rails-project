@@ -42,6 +42,8 @@ Rails
         scope :admin do
           resources :users
           resources :coupons
+          get 'users/deleted/list', to: 'users#deleted'
+
 
           get 'users/deleted/list', to: 'users#deleted'
           post 'users/:id/restore', to: 'users#restore'
@@ -101,6 +103,8 @@ Rails
           get '/me', to: 'users#me'
 
           put '/change_password', to: 'passwords#change_password'
+
+          get '/coupon/validate', to: 'coupons#validate'
 
           resource :settings, only: %i[show]
 

@@ -121,129 +121,263 @@ class Api::V1::OrdersController < ApplicationController
            status: :ok
   end
 
-def create
-  cart_items = order_params[:order_items]
-  coupon_code = params[:coupon_code].presence
+  def create
+    cart_items = order_params[:order_items]
+    coupon_code = order_params[:coupon_code] # ✅ Get coupon code
 
-  ActiveRecord::Base.transaction do
-    # ✅ Step 1: Calculate subtotal
-    subtotal = cart_items.sum do |item|
-      book = Book.find(item[:book_id])
-      (book.price - book.price * (book.discount_percentage / 100.0)) * item[:quantity].to_i
-    end
-
-    # ✅ Step 2: Find and validate coupon
-    coupon = Coupon.find_by(code: coupon_code, active: true) if coupon_code.present?
-    discount_amount = 0.0
-
-    if coupon
-      if coupon.percent_off.present?
-        discount_amount = subtotal * (coupon.percent_off / 100.0)
-      elsif coupon.amount_off.present?
-        discount_amount = coupon.amount_off
+    ActiveRecord::Base.transaction do
+      subtotal =
+      cart_items.sum do |item|
+        book = Book.find(item[:book_id])
+        (book.price - book.price * (book.discount_percentage / 100)) *
+        item[:quantity].to_i
       end
-    end
+      settings = Setting.current
+      tax_amount = subtotal * settings.tax_rate
+      shipping_cost = settings.shipping_cost
 
-    subtotal_after_discount = [subtotal - discount_amount, 0].max
+      # ▼▼▼ MODIFICATION START: Coupon Validation & Discount Calculation ▼▼▼
+      coupon = nil
+      discount_amount = 0.0
 
-    # ✅ Step 3: Add tax and shipping
-    settings = Setting.current
-    tax_amount = subtotal_after_discount * settings.tax_rate
-    shipping_cost = settings.shipping_cost
-    total_amount = subtotal_after_discount + tax_amount + shipping_cost
+      if coupon_code.present?
+        coupon = Coupon.find_by(code: coupon_code, active: true)
 
-    # ✅ Step 4: Create order
-    order = current_user.orders.create!(
-      order_number: SecureRandom.hex(10).upcase,
-      status: 0,
-      subtotal: subtotal,
-      tax_amount: tax_amount,
-      shipping_cost: shipping_cost,
-      total_amount: total_amount,
-      shipping_address_id: order_params[:shipping_address_id],
-      payment_method: order_params[:payment_method],
-      payment_status: 'pending',
-      tracking_number: nil,
-      notes: order_params[:notes],
-      coupon_code: coupon&.code,
-      discount_amount: discount_amount
-    )
+        if coupon.nil?
+          # Directly render error if coupon is invalid, which will roll back the transaction
+          raise StandardError.new('Coupon code is invalid or has expired.')
+        end
 
-    # ✅ Step 5: Create order items and update stock
-    cart_items.each do |item|
-      book = Book.find(item[:book_id])
-      quantity = item[:quantity].to_i
+        # Calculate discount based on coupon type
+        if coupon.percent_off.present?
+          discount_amount = (subtotal + tax_amount + shipping_cost) * (coupon.percent_off / 100.0)
+        elsif coupon.amount_off.present?
+          discount_amount = coupon.amount_off
+        end
+      end
 
-      raise ActiveRecord::RecordInvalid.new(order), "Not enough stock for #{book.title}" if book.stock_quantity < quantity
+      # ▲▲▲ MODIFICATION END ▲▲▲
 
-      OrderItem.create!(
-        order: order,
-        book: book,
-        quantity: quantity,
-        unit_price: book.price,
-        total_price: book.price * quantity
+      # ▼▼▼ MODIFICATION START: Apply Discount to Total ▼▼▼
+      # Ensure total doesn't go below zero
+      total_amount = [
+        subtotal + tax_amount + shipping_cost - discount_amount,
+        0,
+      ].max
+
+      # ▲▲▲ MODIFICATION END ▲▲▲
+      order =
+        current_user.orders.create!(
+          order_number: SecureRandom.hex(10).upcase,
+          status: 0,
+          subtotal: subtotal,
+          tax_amount: tax_amount,
+          shipping_cost: shipping_cost,
+          discount_amount: discount_amount, # ✅ Save discount amount
+          total_amount: total_amount,
+          shipping_address_id: order_params[:shipping_address_id],
+          payment_method: order_params[:payment_method],
+          payment_status: 'pending',
+          coupon: coupon, # ✅ Associate coupon with the order
+          notes: order_params[:notes],
+        )
+      binding.pry
+      cart_items.each do |item|
+        book = Book.find(item[:book_id])
+        quantity = item[:quantity].to_i
+
+        if book.stock_quantity < quantity
+          raise ActiveRecord::RecordInvalid.new(order),
+                "Not enough stock for #{book.title}"
+        end
+
+        # ✅ Create order item
+        OrderItem.create!(
+          order: order,
+          book: book,
+          quantity: quantity,
+          unit_price: book.price,
+          total_price: book.price * quantity,
+        )
+
+        # ✅ Update book stock and sold count
+        book.update!(
+          stock_quantity: book.stock_quantity - quantity,
+          sold_count: book.sold_count + quantity,
+        )
+      end
+
+      line_items = StripeService.new.build_line_items_from_order(order)
+      line_items << build_line_item(name: 'Tax (10%)', unit_amount: tax_amount)
+      line_items <<
+        build_line_item(name: 'Shipping', unit_amount: shipping_cost)
+
+      # ▼▼▼ MODIFICATION START: Conditionally Add Discount to Stripe Session ▼▼▼
+      stripe_session_params = {
+        payment_method_types: ['card'],
+        line_items: line_items,
+        mode: 'payment',
+        success_url:
+          "#{ENV['FRONTEND_URL']}/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url: "#{ENV['FRONTEND_URL']}/checkout/cancel",
+      }
+
+      if coupon
+        stripe_session_params[:discounts] = [
+          { coupon: coupon.stripe_coupon_id },
+        ]
+      end
+
+      session = Stripe::Checkout::Session.create(stripe_session_params)
+
+      # ▲▲▲ MODIFICATION END ▲▲▲
+      order.update!(stripe_session_id: session.id)
+
+      CancelUnpaidOrderJob.set(wait: 30.minutes).perform_later(order.id)
+      remove_items_from_cart(cart_items)
+      ActionCable.server.broadcast(
+        'admin_orders',
+        { type: 'ORDER_CREATED', payload: OrderSerializer.new(order).as_json },
       )
 
-      book.update!(
-        stock_quantity: book.stock_quantity - quantity,
-        sold_count: book.sold_count + quantity
-      )
+      render json: {
+               status: {
+                 code: 201,
+                 message: 'Order created successfully',
+               },
+               data: OrderSerializer.new(order).as_json,
+               payment_url: session.url,
+             },
+             status: :created
     end
-
-    # ✅ Step 6: Build Stripe line items
-    line_items = StripeService.new.build_line_items_from_order(order)
-    line_items << build_line_item(name: 'Tax', unit_amount: tax_amount)
-    line_items << build_line_item(name: 'Shipping', unit_amount: shipping_cost)
-
-    # ✅ Step 7: Stripe Checkout Session
-    session_params = {
-      payment_method_types: ['card'],
-      line_items: line_items,
-      mode: 'payment',
-      success_url: "#{ENV['FRONTEND_URL']}/checkout/success?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: "#{ENV['FRONTEND_URL']}/checkout/cancel"
-    }
-
-    # Attach Stripe coupon if valid
-    if coupon.present? && coupon.stripe_coupon_id.present?
-      begin
-        stripe_coupon = Stripe::Coupon.retrieve(coupon.stripe_coupon_id)
-        session_params[:discounts] = [{ coupon: stripe_coupon.id }] if stripe_coupon.valid
-      rescue Stripe::InvalidRequestError
-        Rails.logger.warn("⚠️ Invalid or expired Stripe coupon: #{coupon.stripe_coupon_id}")
-      end
-    end
-
-    session = Stripe::Checkout::Session.create(session_params)
-
-    # ✅ Step 8: Update order with Stripe session
-    order.update!(stripe_session_id: session.id)
-
-    # ✅ Step 9: Remove items from cart & schedule cleanup
-    remove_items_from_cart(cart_items)
-    CancelUnpaidOrderJob.set(wait: 30.minutes).perform_later(order.id)
-
-    # ✅ Step 10: Broadcast to admin dashboard
-    ActionCable.server.broadcast(
-      'admin_orders',
-      { type: 'ORDER_CREATED', payload: OrderSerializer.new(order).as_json }
-    )
-
+  rescue ActiveRecord::RecordInvalid => e
     render json: {
-      status: { code: 201, message: 'Order created successfully' },
-      data: OrderSerializer.new(order).as_json,
-      payment_url: session.url
-    }, status: :created
+             error: e.record.errors.full_messages,
+           },
+           status: :unprocessable_entity
+  rescue Stripe::StripeError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue => e
+    render json: { error: e.message }, status: :bad_request
   end
 
-rescue ActiveRecord::RecordInvalid => e
-  render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
-rescue Stripe::StripeError => e
-  render json: { error: "Stripe error: #{e.message}" }, status: :unprocessable_entity
-rescue => e
-  render json: { error: e.message }, status: :bad_request
-end
+  def create2
+    cart_items = order_params[:order_items]
 
+    ActiveRecord::Base.transaction do
+      subtotal =
+        cart_items.sum do |item|
+          book = Book.find(item[:book_id])
+          (
+            (book.price - book.price * (book.discount_percentage / 100)) *
+              item[:quantity].to_i
+          )
+        end
+
+      settings = Setting.current
+      tax_amount = subtotal * settings.tax_rate
+      shipping_cost = settings.shipping_cost
+      total_amount = subtotal + tax_amount + shipping_cost
+      order =
+        current_user.orders.create!(
+          order_number: SecureRandom.hex(10).upcase,
+          status: 0,
+          subtotal: subtotal,
+          tax_amount: tax_amount,
+          shipping_cost: shipping_cost,
+          total_amount: total_amount,
+          shipping_address_id: order_params[:shipping_address_id],
+          payment_method: order_params[:payment_method],
+          payment_status: 'pending',
+          tracking_number: nil,
+          notes: order_params[:notes],
+        )
+
+      cart_items.each do |item|
+        book = Book.find(item[:book_id])
+        quantity = item[:quantity].to_i
+
+        if book.stock_quantity < quantity
+          raise ActiveRecord::RecordInvalid.new(order),
+                "Not enough stock for #{book.title}"
+        end
+
+        # ✅ Create order item
+        OrderItem.create!(
+          order: order,
+          book: book,
+          quantity: quantity,
+          unit_price: book.price,
+          total_price: book.price * quantity,
+        )
+
+        # ✅ Update book stock and sold count
+        book.update!(
+          stock_quantity: book.stock_quantity - quantity,
+          sold_count: book.sold_count + quantity,
+        )
+      end
+
+      # Tạo line items cho Stripe
+      line_items = StripeService.new.build_line_items_from_order(order)
+
+      # Append tax & shipping line items
+      line_items << build_line_item(name: 'Tax (10%)', unit_amount: tax_amount)
+      line_items <<
+        build_line_item(name: 'Shipping', unit_amount: shipping_cost)
+
+      # Tạo checkout session Stripe
+      session =
+        Stripe::Checkout::Session.create(
+          payment_method_types: ['card'],
+          line_items: line_items,
+          mode: 'payment',
+          success_url:
+            "#{ENV['FRONTEND_URL']}/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+          cancel_url: "#{ENV['FRONTEND_URL']}/checkout/cancel",
+        )
+
+      order.update!(stripe_session_id: session.id)
+
+      CancelUnpaidOrderJob.set(wait: 30.minutes).perform_later(order.id)
+
+      #Remove bought items in cart
+      remove_items_from_cart(cart_items)
+
+      # Only current user
+      # OrdersChannel.broadcast_to(
+      #   current_user,
+      #   {
+      #     type: 'ORDER_UPDATED', # custom type
+      #     payload: OrderSerializer.new(order).as_json,
+      #   },
+      # )
+      # All admin
+      ActionCable.server.broadcast(
+        'admin_orders',
+        { type: 'ORDER_CREATED', payload: OrderSerializer.new(order).as_json },
+      )
+
+      render json: {
+               status: {
+                 code: 201,
+                 message: 'Order created successfully',
+               },
+               data: OrderSerializer.new(order).as_json,
+               payment_url: session.url,
+             },
+             status: :created
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    render json: {
+             error: e.record.errors.full_messages,
+           },
+           status: :unprocessable_entity
+  rescue Stripe::StripeError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  rescue => e
+    render json: { error: e.message }, status: :bad_request
+  end
 
   # orders_controller.rb
   def pay
@@ -378,6 +512,7 @@ end
       :payment_method,
       :note,
       :status,
+      :coupon_code,
       order_items: %i[quantity book_id],
     )
   end

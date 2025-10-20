@@ -1,12 +1,14 @@
 class Coupon < ApplicationRecord
+  acts_as_paranoid
+
   validates :code, presence: true, uniqueness: true
   validates :duration, presence: true
   validates :percent_off, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :amount_off, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
 
-  before_create :create_stripe_coupon_and_promo
-  before_update :update_stripe_coupon_and_promo
-  before_destroy :delete_stripe_coupon
+  # before_create :create_stripe_coupon_and_promo
+  # before_update :update_stripe_coupon_and_promo
+  # before_destroy :delete_stripe_coupon
 
   private
 

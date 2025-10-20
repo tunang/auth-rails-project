@@ -5,6 +5,8 @@ class Order < ApplicationRecord
 
   belongs_to :user
   belongs_to :shipping_address, -> { with_deleted }, class_name: 'Address'
+  belongs_to :coupon, optional: true
+
 
   has_many :order_items, dependent: :destroy
   has_many :books, through: :order_items

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_16_031136) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_20_073353) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -151,7 +151,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_16_031136) do
     t.boolean "active", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "duration_in_months"
+    t.datetime "deleted_at"
     t.index ["code"], name: "index_coupons_on_code", unique: true
+    t.index ["deleted_at"], name: "index_coupons_on_deleted_at"
   end
 
   create_table "friendly_id_slugs", force: :cascade do |t|
@@ -239,6 +242,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_16_031136) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at"
+    t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0"
+    t.bigint "coupon_id"
+    t.index ["coupon_id"], name: "index_orders_on_coupon_id"
     t.index ["deleted_at"], name: "index_orders_on_deleted_at"
     t.index ["order_number"], name: "index_orders_on_order_number", unique: true
     t.index ["shipping_address_id"], name: "index_orders_on_shipping_address_id"
@@ -288,5 +294,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_16_031136) do
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "order_items", "books"
   add_foreign_key "order_items", "orders"
+  add_foreign_key "orders", "coupons"
   add_foreign_key "orders", "users"
 end
