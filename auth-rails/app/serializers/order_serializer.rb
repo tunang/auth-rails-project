@@ -9,7 +9,6 @@ class OrderSerializer
       order_number: order.order_number,
       status: order.status,
       subtotal: order.subtotal,
-      discount_amount: order.discount_amount,
       tax_amount: order.tax_amount,
       shipping_cost: order.shipping_cost,
       total_amount: order.total_amount,
@@ -18,7 +17,6 @@ class OrderSerializer
       stripe_session_id: order.stripe_session_id,
       user: user_data,
       shipping_address: shipping_address_data,
-      coupon: coupon_data, # ✅ new field
     }
   end
 

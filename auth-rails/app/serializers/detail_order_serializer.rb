@@ -10,6 +10,7 @@ class DetailOrderSerializer
       status: order.status,
       subtotal: order.subtotal,
       tax_amount: order.tax_amount,
+      discount_amount: order.discount_amount,
       shipping_cost: order.shipping_cost,
       total_amount: order.total_amount,
       created_at: order.created_at,
@@ -18,6 +19,7 @@ class DetailOrderSerializer
       order_items: order_items,
       shipping_address: shipping_address_data,
       stripe_session_id: order.stripe_session_id,
+      coupon: coupon_data,  
     }
   end
 
@@ -37,8 +39,6 @@ class DetailOrderSerializer
         quantity: order_item.quantity,
         unit_price: order_item.unit_price,
         total_price: order_item.total_price,
-      discount_amount: order.discount_amount,
-
         book: {
           id: order_item.book.id,
           title: order_item.book.title,
@@ -63,5 +63,16 @@ class DetailOrderSerializer
     return nil unless order.shipping_address
 
     AddressSerializer.new(order.shipping_address).as_json
+  end
+  def coupon_data
+    return nil unless order.coupon
+
+    {
+      id: order.coupon.id,
+      code: order.coupon.code,
+      percent_off: order.coupon.percent_off,
+      amount_off: order.coupon.amount_off,
+      active: order.coupon.active,
+    }
   end
 end
